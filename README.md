@@ -1,8 +1,6 @@
-# NYTimes Objective-C Style Guide
+# CTX Objective-C Style Guide
 
-This style guide outlines the coding conventions of the iOS team at The New York Times. We welcome your feedback in [issues](https://github.com/NYTimes/objetive-c-style-guide/issues), [pull requests](https://github.com/NYTimes/objetive-c-style-guide/pulls) and [tweets](https://twitter.com/nytimesmobile). Also, [we're hiring](http://jobs.nytco.com/job/New-York-iOS-Developer-Job-NY/2572221/).
-
-Thanks to all of [our contributors](https://github.com/NYTimes/objective-c-style-guide/contributors).
+This style guide outlines the coding conventions of the CTX (Classroom Technology Experience) iOS team at EF Education First. This style guide is based on the [NYTimes Objective-C Style Guide](https://github.com/NYTimes/objetive-c-style-guide).
 
 ## Introduction
 
@@ -66,6 +64,17 @@ else {
 //Do something else
 }
 ```
+
+**Not:**
+```objc
+if(user.isHappy) {
+//Do something
+} else {
+//Do something else
+}
+```
+
+* Use a space between the control structure (`if`/`else`/`switch`/`while` etc.) and the open brace.
 * There should be exactly one blank line between methods to aid in visual clarity and organization. Whitespace within methods should separate functionality, but often there should probably be new methods.
 * `@synthesize` and `@dynamic` should each be declared on new lines in the implementation.
 
@@ -133,10 +142,16 @@ Some of Apple’s APIs write garbage values to the error parameter (if non-NULL)
 
 In method signatures, there should be a space after the scope (-/+ symbol). There should be a space between the method segments.
 
-**For Example**:
+**For example:**:
 ```objc
 - (void)setExampleText:(NSString *)text image:(UIImage *)image;
 ```
+
+**Not:**:
+```objc
+-(void)setExampleText: (NSString *)text image: (UIImage *)image;
+```
+
 ## Variables
 
 Variables should be named as descriptively as possible. Single letter variable names should be avoided except in `for()` loops.
@@ -148,9 +163,9 @@ Property definitions should be used in place of naked instance variables wheneve
 **For example:**
 
 ```objc
-@interface NYTSection: NSObject
+@interface CTXObject: NSObject
 
-@property (nonatomic) NSString *headline;
+@property (nonatomic) NSString *uuid;
 
 @end
 ```
@@ -158,8 +173,8 @@ Property definitions should be used in place of naked instance variables wheneve
 **Not:**
 
 ```objc
-@interface NYTSection : NSObject {
-    NSString *headline;
+@interface CTXObject : NSObject {
+    NSString *uuid;
 }
 ```
 
@@ -175,24 +190,24 @@ Long, descriptive method and variable names are good.
 UIButton *settingsButton;
 ```
 
-**Not**
+**Not:**
 
 ```objc
 UIButton *setBut;
 ```
 
-A three letter prefix (e.g. `NYT`) should always be used for class names and constants, however may be omitted for Core Data entity names. Constants should be camel-case with all words capitalized and prefixed by the related class name for clarity.
+A three letter prefix (e.g. `CTX`) should always be used for class names, categories (especially for categories on Cocoa classes) and constants, however may be omitted for Core Data entity names. Constants should be camel-case with all words capitalized and prefixed by the related class name for clarity.
 
 **For example:**
 
 ```objc
-static const NSTimeInterval NYTArticleViewControllerNavigationFadeAnimationDuration = 0.3;
+static const NSTimeInterval CTXLessonViewControllerNavigationFadeAnimationDuration = 0.4;
 ```
 
 **Not:**
 
 ```objc
-static const NSTimeInterval fadetime = 1.7;
+static const NSTimeInterval fadetime = 0.2;
 ```
 
 Properties should be camel-case with the leading word being lowercase. **If Xcode can automatically synthesize the variable, then let it.** Otherwise, in order to be consistent, the backing instance variables for these properties should be camel-case with the leading word being lowercase and a leading underscore. This is the same format as Xcode's default synthesis.
@@ -219,6 +234,26 @@ When they are needed, comments should be used to explain **why** a particular pi
 
 Block comments should generally be avoided, as code should be as self-documenting as possible, with only the need for intermittent, few-line explanations. This does not apply to those comments used to generate documentation.
 
+## Header Documentation
+
+The documentation of class should be done using the Doxygen/AppleDoc syntax only in the .h files when possible. Documentation should be provided for methods and properties.
+
+**For example:**
+
+```objc
+/**
+ *	Designated initializer.
+ *
+ *	@param	repository	The repository for CRUD operations.
+ *	@param	searchService	The search service used to query the repository.
+ *
+ *	@return	A CTXScheduledOperationsProcessor object.
+ */
+- (instancetype)initWithScheduledOperationsRepository:(id<CTXGenericUGCRepositoryProtocol>)repository
+                     scheduledOperationsSearchService:(id<CTXGenericSearchServiceProtocol>)searchService;
+
+```
+
 ## init and dealloc
 
 `dealloc` methods should be placed at the top of the implementation, directly after the `@synthesize` and `@dynamic` statements. `init` should be placed directly below the `dealloc` methods of any class.
@@ -226,7 +261,8 @@ Block comments should generally be avoided, as code should be as self-documentin
 `init` methods should be structured like this:
 
 ```objc
-- (instancetype)init {
+- (instancetype)init
+{
     self = [super init]; // or call the designated initalizer
     if (self) {
         // Custom initialization
@@ -293,9 +329,9 @@ Constants are preferred over in-line string literals or numbers, as they allow f
 **For example:**
 
 ```objc
-static NSString * const NYTAboutViewControllerCompanyName = @"The New York Times Company";
+static NSString * const CTXAboutViewControllerTeamName = @"CTX Classroom Technology Experience";
 
-static const CGFloat NYTImageThumbnailHeight = 50.0;
+static const CGFloat CTXImageThumbnailHeight = 50.0;
 ```
 
 **Not:**
@@ -313,20 +349,20 @@ When using `enum`s, it is recommended to use the new fixed underlying type speci
 **Example:**
 
 ```objc
-typedef NS_ENUM(NSInteger, NYTAdRequestState) {
-    NYTAdRequestStateInactive,
-    NYTAdRequestStateLoading
+typedef NS_ENUM(NSInteger, CTXLessonState) {
+    CTXLessonStateInactive,
+    CTXLessonStateLoading
 };
 ```
 
 ## Private Properties
 
-Private properties should be declared in class extensions (anonymous categories) in the implementation file of a class. Named categories (such as `NYTPrivate` or `private`) should never be used unless extending another class.
+Private properties should be declared in class extensions (anonymous categories) in the implementation file of a class. Named categories (e.g. `CTXPrivate`) should never be used unless extending another class.
 
 **For example:**
 
 ```objc
-@interface NYTAdvertisement ()
+@interface CTXAdvertisement ()
 
 @property (nonatomic, strong) GADBannerView *googleAdView;
 @property (nonatomic, strong) ADBannerView *iAdView;
@@ -378,8 +414,8 @@ if (![someObject boolValue])
 **Not:**
 
 ```objc
-if ([someObject boolValue] == NO)
 if (isAwesome == YES) // Never do this.
+if ([someObject boolValue] == NO)
 ```
 
 -----
