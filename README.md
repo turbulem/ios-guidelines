@@ -1,8 +1,6 @@
-# NYTimes Objective-C Style Guide
+# Badoo Objective-C Style Guide
 
-This style guide outlines the coding conventions of the iOS team at The New York Times. We welcome your feedback in [issues](https://github.com/NYTimes/objetive-c-style-guide/issues), [pull requests](https://github.com/NYTimes/objetive-c-style-guide/pulls) and [tweets](https://twitter.com/nytimesmobile). Also, [we're hiring](http://jobs.nytco.com/job/New-York-iOS-Developer-Job-NY/2572221/).
-
-Thanks to all of [our contributors](https://github.com/NYTimes/objective-c-style-guide/contributors).
+This style guide outlines the coding conventions used at [Badoo](http://badoo.com). This style guide is based on the [NYTimes Objective-C Style Guide](https://github.com/NYTimes/objetive-c-style-guide).
 
 ## Introduction
 
@@ -65,8 +63,31 @@ else {
 //Do something else
 }
 ```
+
+**Not:**
+```objc
+if(user.isHappy) {
+//Do something
+} else {
+//Do something else
+}
+```
+
+* Use a space between the control structure (`if`/`else`/`switch`/`while` etc.) and the open brace.
 * There should be exactly one blank line between methods to aid in visual clarity and organization. Whitespace within methods should separate functionality, but often there should probably be new methods.
 * `@synthesize` and `@dynamic` should each be declared on new lines in the implementation.
+
+
+## Brackets
+Use egyptian brackets for:
+
+* control structures (if-else, for, switch)
+
+Non egyptian brackets are meant to be used for:
+
+* class implementations (if any)
+* method implementations
+
 
 ## Conditionals
 
@@ -89,6 +110,18 @@ or
 
 ```objc
 if (!error) return success;
+```
+
+Always avoid Yoda conditions.
+
+**For example:**
+```objc
+if ([myValue isEqual:constant]) { ...
+```
+
+**Not:**
+```objc
+if ([constant isEqual:myValue]) { ...
 ```
 
 ### Ternary Operator
@@ -132,10 +165,18 @@ Some of Apple’s APIs write garbage values to the error parameter (if non-NULL)
 
 In method signatures, there should be a space after the scope (-/+ symbol). There should be a space between the method segments.
 
-**For Example**:
+**For example:**:
 ```objc
 - (void)setExampleText:(NSString *)text image:(UIImage *)image;
 ```
+
+**Not:**:
+```objc
+-(void)setExampleText: (NSString *)text image: (UIImage *)image;
+```
+
+Always prefix private methods with underscore! Always!
+
 ## Variables
 
 Variables should be named as descriptively as possible. Single letter variable names should be avoided except in `for()` loops.
@@ -147,9 +188,9 @@ Property definitions should be used in place of naked instance variables wheneve
 **For example:**
 
 ```objc
-@interface NYTSection: NSObject
+@interface BMAObject: NSObject
 
-@property (nonatomic) NSString *headline;
+@property (nonatomic) NSString *uuid;
 
 @end
 ```
@@ -157,8 +198,8 @@ Property definitions should be used in place of naked instance variables wheneve
 **Not:**
 
 ```objc
-@interface NYTSection : NSObject {
-    NSString *headline;
+@interface BMAObject : NSObject {
+    NSString *uuid;
 }
 ```
 
@@ -174,24 +215,24 @@ Long, descriptive method and variable names are good.
 UIButton *settingsButton;
 ```
 
-**Not**
+**Not:**
 
 ```objc
 UIButton *setBut;
 ```
 
-A three letter prefix (e.g. `NYT`) should always be used for class names and constants, however may be omitted for Core Data entity names. Constants should be camel-case with all words capitalized and prefixed by the related class name for clarity.
+A three letter prefix (e.g. `BMA`) should always be used for class names, categories (especially for categories on Cocoa classes) and constants, however may be omitted for Core Data entity names. Constants should be camel-case with all words capitalized and prefixed by the related class name for clarity.
 
 **For example:**
 
 ```objc
-static const NSTimeInterval NYTArticleViewControllerNavigationFadeAnimationDuration = 0.3;
+static const NSTimeInterval BMAProfileViewControllerNavigationFadeAnimationDuration = 0.4;
 ```
 
 **Not:**
 
 ```objc
-static const NSTimeInterval fadetime = 1.7;
+static const NSTimeInterval fadetime = 0.2;
 ```
 
 Properties and local variables should be camel-case with the leading word being lowercase. 
@@ -210,11 +251,49 @@ Instance variables should be camel-case with the leading word being lowercase, a
 id varnm;
 ```
 
+Delegate methods should be always have the caller as first parameter
+
+**For example:**
+
+```objc
+- (void)lessonController:(LessonController *)lessonController didSelectLesson:(Lesson *)lesson;
+```
+
+**Not:**
+
+```objc
+- (void)lessonControllerDidSelectLesson:(Lesson *)lesson;
+```
+
+### Underscores
+
+When using properties, instance variables should always be accessed and mutated using `self.`. This means that all properties will be visually distinct, as they will all be prefaced with `self.`. Local variables should not contain underscores.
+
 ## Comments
 
 When they are needed, comments should be used to explain **why** a particular piece of code does something. Any comments that are used must be kept up-to-date or deleted.
 
 Block comments should generally be avoided, as code should be as self-documenting as possible, with only the need for intermittent, few-line explanations. This does not apply to those comments used to generate documentation.
+
+## Header Documentation
+
+The documentation of class should be done using the Doxygen/AppleDoc syntax only in the .h files when possible. Documentation should be provided for methods and properties.
+
+**For example:**
+
+```objc
+/**
+ *  Designated initializer.
+ *
+ *  @param  repository  The repository for CRUD operations.
+ *  @param  searchService The search service used to query the repository.
+ *
+ *  @return A BMAScheduledOperationsProcessor object.
+ */
+- (instancetype)initWithScheduledOperationsRepository:(id<BMAGenericUGCRepositoryProtocol>)repository
+                     scheduledOperationsSearchService:(id<BMAGenericSearchServiceProtocol>)searchService;
+
+```
 
 ## init and dealloc
 
@@ -290,9 +369,9 @@ Constants are preferred over in-line string literals or numbers, as they allow f
 **For example:**
 
 ```objc
-static NSString * const NYTAboutViewControllerCompanyName = @"The New York Times Company";
+static NSString * const BMAAboutViewControllerTeamName = @"BMA Badoo About View Controller";
 
-static const CGFloat NYTImageThumbnailHeight = 50.0;
+static const CGFloat BMAImageThumbnailHeight = 50.0;
 ```
 
 **Not:**
@@ -310,20 +389,20 @@ When using `enum`s, it is recommended to use the new fixed underlying type speci
 **Example:**
 
 ```objc
-typedef NS_ENUM(NSInteger, NYTAdRequestState) {
-    NYTAdRequestStateInactive,
-    NYTAdRequestStateLoading
+typedef NS_ENUM(NSInteger, BMAProfilePictureState) {
+    BMAProfilePictureStateInactive,
+    BMAProfilePictureStateLoading
 };
 ```
 
 ## Private Properties
 
-Private properties should be declared in class extensions (anonymous categories) in the implementation file of a class. Named categories (such as `NYTPrivate` or `private`) should never be used unless extending another class.
+Private properties should be declared in class extensions (anonymous categories) in the implementation file of a class. Named categories (e.g. `BMAPrivate`) should never be used unless extending another class.
 
 **For example:**
 
 ```objc
-@interface NYTAdvertisement ()
+@interface BMAAdvertisement ()
 
 @property (nonatomic, strong) GADBannerView *googleAdView;
 @property (nonatomic, strong) ADBannerView *iAdView;
@@ -375,8 +454,8 @@ if (![someObject boolValue])
 **Not:**
 
 ```objc
-if ([someObject boolValue] == NO)
 if (isAwesome == YES) // Never do this.
+if ([someObject boolValue] == NO)
 ```
 
 -----
@@ -390,7 +469,8 @@ Text and example taken from the [Cocoa Naming Guidelines](https://developer.appl
 
 ## Singletons
 
-Singleton objects should use a thread-safe pattern for creating their shared instance.
+Generally avoid using them if possible, use dependency injection instead.
+Nevertheless, needed singleton objects should use a thread-safe pattern for creating their shared instance.
 ```objc
 + (instancetype)sharedInstance {
    static id sharedInstance = nil;
