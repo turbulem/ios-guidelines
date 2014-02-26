@@ -1,6 +1,6 @@
-# CTX Objective-C Style Guide
+# Alberto De Bortoli Objective-C Style Guide
 
-This style guide outlines the coding conventions of the CTX (Classroom Technology Experience) iOS team at EF Education First. This style guide is based on the [NYTimes Objective-C Style Guide](https://github.com/NYTimes/objetive-c-style-guide).
+This style guide outlines my coding conventions. This style guide is based on the [NYTimes Objective-C Style Guide](https://github.com/NYTimes/objetive-c-style-guide).
 
 ## Introduction
 
