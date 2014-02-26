@@ -189,7 +189,7 @@ Property definitions should be used in place of naked instance variables wheneve
 **For example:**
 
 ```objc
-@interface CTXObject: NSObject
+@interface BMAObject: NSObject
 
 @property (nonatomic) NSString *uuid;
 
@@ -199,7 +199,7 @@ Property definitions should be used in place of naked instance variables wheneve
 **Not:**
 
 ```objc
-@interface CTXObject : NSObject {
+@interface BMAObject : NSObject {
     NSString *uuid;
 }
 ```
@@ -222,12 +222,12 @@ UIButton *settingsButton;
 UIButton *setBut;
 ```
 
-A three letter prefix (e.g. `CTX`) should always be used for class names, categories (especially for categories on Cocoa classes) and constants, however may be omitted for Core Data entity names. Constants should be camel-case with all words capitalized and prefixed by the related class name for clarity.
+A three letter prefix (e.g. `BMA`) should always be used for class names, categories (especially for categories on Cocoa classes) and constants, however may be omitted for Core Data entity names. Constants should be camel-case with all words capitalized and prefixed by the related class name for clarity.
 
 **For example:**
 
 ```objc
-static const NSTimeInterval CTXLessonViewControllerNavigationFadeAnimationDuration = 0.4;
+static const NSTimeInterval BMAProfileViewControllerNavigationFadeAnimationDuration = 0.4;
 ```
 
 **Not:**
@@ -287,10 +287,10 @@ The documentation of class should be done using the Doxygen/AppleDoc syntax only
  *  @param  repository  The repository for CRUD operations.
  *  @param  searchService The search service used to query the repository.
  *
- *  @return A CTXScheduledOperationsProcessor object.
+ *  @return A BMAScheduledOperationsProcessor object.
  */
-- (instancetype)initWithScheduledOperationsRepository:(id<CTXGenericUGCRepositoryProtocol>)repository
-                     scheduledOperationsSearchService:(id<CTXGenericSearchServiceProtocol>)searchService;
+- (instancetype)initWithScheduledOperationsRepository:(id<BMAGenericUGCRepositoryProtocol>)repository
+                     scheduledOperationsSearchService:(id<BMAGenericSearchServiceProtocol>)searchService;
 
 ```
 
@@ -369,9 +369,9 @@ Constants are preferred over in-line string literals or numbers, as they allow f
 **For example:**
 
 ```objc
-static NSString * const CTXAboutViewControllerTeamName = @"CTX Classroom Technology Experience";
+static NSString * const BMAAboutViewControllerTeamName = @"BMA Badoo About View Controller";
 
-static const CGFloat CTXImageThumbnailHeight = 50.0;
+static const CGFloat BMAImageThumbnailHeight = 50.0;
 ```
 
 **Not:**
@@ -389,20 +389,20 @@ When using `enum`s, it is recommended to use the new fixed underlying type speci
 **Example:**
 
 ```objc
-typedef NS_ENUM(NSInteger, CTXLessonState) {
-    CTXLessonStateInactive,
-    CTXLessonStateLoading
+typedef NS_ENUM(NSInteger, BMAProfilePictureState) {
+    BMAProfilePictureStateInactive,
+    BMAProfilePictureStateLoading
 };
 ```
 
 ## Private Properties
 
-Private properties should be declared in class extensions (anonymous categories) in the implementation file of a class. Named categories (e.g. `CTXPrivate`) should never be used unless extending another class.
+Private properties should be declared in class extensions (anonymous categories) in the implementation file of a class. Named categories (e.g. `BMAPrivate`) should never be used unless extending another class.
 
 **For example:**
 
 ```objc
-@interface CTXAdvertisement ()
+@interface BMAAdvertisement ()
 
 @property (nonatomic, strong) GADBannerView *googleAdView;
 @property (nonatomic, strong) ADBannerView *iAdView;
