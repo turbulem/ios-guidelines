@@ -1,6 +1,6 @@
-# Alberto De Bortoli Objective-C Style Guide
+# Badoo Objective-C Style Guide
 
-This style guide outlines my coding conventions. This style guide is based on the [NYTimes Objective-C Style Guide](https://github.com/NYTimes/objetive-c-style-guide).
+This style guide outlines the coding conventions used at [Badoo](http://badoo.com). This style guide is based on the [NYTimes Objective-C Style Guide](https://github.com/NYTimes/objetive-c-style-guide).
 
 ## Introduction
 
@@ -176,6 +176,8 @@ In method signatures, there should be a space after the scope (-/+ symbol). Ther
 -(void)setExampleText: (NSString *)text image: (UIImage *)image;
 ```
 
+Always prefix private methods with underscore! Always!
+
 ## Variables
 
 Variables should be named as descriptively as possible. Single letter variable names should be avoided except in `for()` loops.
@@ -280,12 +282,12 @@ The documentation of class should be done using the Doxygen/AppleDoc syntax only
 
 ```objc
 /**
- *	Designated initializer.
+ *  Designated initializer.
  *
- *	@param	repository	The repository for CRUD operations.
- *	@param	searchService	The search service used to query the repository.
+ *  @param  repository  The repository for CRUD operations.
+ *  @param  searchService The search service used to query the repository.
  *
- *	@return	A CTXScheduledOperationsProcessor object.
+ *  @return A CTXScheduledOperationsProcessor object.
  */
 - (instancetype)initWithScheduledOperationsRepository:(id<CTXGenericUGCRepositoryProtocol>)repository
                      scheduledOperationsSearchService:(id<CTXGenericSearchServiceProtocol>)searchService;
