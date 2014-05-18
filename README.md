@@ -34,6 +34,7 @@ Here are some of the documents from Apple that informed the style guide. If some
 * [Private Properties](#private-properties)
 * [Image Naming](#image-naming)
 * [Booleans](#booleans)
+* [Blocks](#blocks)
 * [Singletons](#singletons)
 * [Xcode Project](#xcode-project)
 
@@ -641,6 +642,37 @@ If the name of a `BOOL` property is expressed as an adjective, the property can 
 @property (assign, getter=isEditable) BOOL editable;
 ```
 Text and example taken from the [Cocoa Naming Guidelines](https://developer.apple.com/library/mac/#documentation/Cocoa/Conceptual/CodingGuidelines/Articles/NamingIvarsAndTypes.html#//apple_ref/doc/uid/20001284-BAJGIIJE).
+
+## Blocks
+Using blocks has several memory caveats, which can cause memory leaks in the long term for an app. Because we want to reduce cognitive overload for reviews and devs, the style should reflect a good practice and reduce possible bugs.
+
+When accessing self from **any** block, always declare a weak self. **Always**. It is true that it's not needed for any type of block, if the block is not retained by the caller, as for example in inline animation blocks, but doing so reduces side effects of refactoring. i.e: moving a block inserted in place to a property. We want to be agile and refactor ruthlessly if necessary, so this rule is very important to reduce side effects.
+
+We have a macro to declare weak self. We may adopt libextobjc [@weakify](http://aceontech.com/objc/ios/2014/01/10/weakify-a-more-elegant-solution-to-weakself.html), it really does not matter.
+
+***Example:***
+```objc
+// Always use weak reference to self, even if it will not cause a retain cycle
+BMA_WEAK_SELF
+[UIView animateWithDuration:(animated ? 0.2 : 0.0) animations:^{
+	weakSelf.inputView.hidden = hidden;
+	weakSelf.inputView.userInteractionEnabled = !hidden;
+    [weakSelf updateTableViewContentInsets];
+    [weakSelf updateScrollIndicatorInsets];
+    }];
+```
+
+***Never:***
+```objc
+[UIView animateWithDuration:(animated ? 0.2 : 0.0) animations:^{
+	self.inputView.hidden = hidden;
+	self.inputView.userInteractionEnabled = !hidden;
+    [self updateTableViewContentInsets];
+    [self updateScrollIndicatorInsets];
+    }];
+```
+
+Some argue (with a lot of reason) that if self is `weakified` in a block, then the operation inside the block can find that the object is turned to nil halfway the execution if it's block. In those cases you may need to create a strong reference to the weak reference (`strongify`). Use those sparingly and within reason, as many times it's not really important if an object went out of memory when executing the block. Also this need exposes some deeper architecture problems.
 
 ## Singletons
 
