@@ -32,7 +32,7 @@ Here are some of the documents from Apple that informed the style guide. If some
 * [Constants](#constants)
 * [Enumerated Types](#enumerated-types)
 * [Private Properties](#private-properties)
-* [Image Naming](#image-naming)
+* [Images](#images)
 * [Booleans](#booleans)
 * [Blocks](#blocks)
 * [Singletons](#singletons)
@@ -587,16 +587,18 @@ Private properties should be declared in class extensions (anonymous categories)
 @end
 ```
 
-## Image Naming
+## Images
+Image names should be named consistently to preserve organization and developer sanity. Please use common judgement when adding them.
 
-Image names should be named consistently to preserve organization and developer sanity. They should be named as one camel case string with a description of their purpose, followed by the un-prefixed name of the class or property they are customizing (if there is one), followed by a further description of color and/or placement, and finally their state.
+We should use asset catalogs for all newly added images for any new feature. The ideas is to have very granular asset catalogs so they can be distributed as modules as part of libraries in the future. When refactoring, keep an eye over legacy code and move images to asset catalogs.
 
-**For example:**
+We can have for example:
+<App>.xcassets
+Feature1.xcassets
+Common.xcassets
+...
 
-* `RefreshBarButtonItem` / `RefreshBarButtonItem@2x` and `RefreshBarButtonItemSelected` / `RefreshBarButtonItemSelected@2x`
-* `ArticleNavigationBarWhite` / `ArticleNavigationBarWhite@2x` and `ArticleNavigationBarBlackSelected` / `ArticleNavigationBarBlackSelected@2x`.
-
-Images that are used for a similar purpose should be grouped in respective groups in an Images folder.
+For applications where we only support iOS7 and iPhone, there is no need to request and include non-retina images.
 
 ## Booleans
 
