@@ -20,7 +20,6 @@ Here are some of the documents from Apple that informed the style guide. If some
 * [Ternary Operator](#ternary-operator)
 * [Error handling](#error-handling)
 * [Methods](#methods)
-* [Variables](#variables)
 * [Enumerations](#enumerations)
 * [Properties](#properties)
 * [Naming](#naming)
@@ -84,7 +83,7 @@ NSString* message = NSLocalizedString(@"bma.intro.message", nil);
 ## Brackets
 Use egyptian brackets for:
 
-* Egyptian brackets and space for methods (`if`/`else`/`switch`/`while` etc.):
+Egyptian brackets and space for methods (`if`/`else`/`switch`/`while` etc.):
 
 **Like this:**
 ```objc
@@ -167,10 +166,10 @@ if ([object stateForDismissalIsCorrect]) {
 if ([object something] && [object somethingElse] && ithinkSo) {
 ```
 
-Use the 'Golden Path' rule as in [ZDS code style](http://www.cimgf.com/zds-code-style-guide/):
+Use the 'Golden Path' rule as in [ZDS code style](http://www.cimgf.com/zds-code-style-guide/).
 
 
-### Ternary Operator
+## Ternary Operator
 
 The Ternary operator, ? , should only be used when it increases clarity or code neatness. A single condition is usually all that should be evaluated. Evaluating multiple conditions is usually more understandable as an if statement, or refactored into instance variables.
 
@@ -212,17 +211,17 @@ Some of Apple’s APIs write garbage values to the error parameter (if non-NULL)
 
 In method signatures, there should be a space after the scope (-/+ symbol). There should be a space between the method segments.
 
-**For example:**:
+**For example:**
 ```objc
 - (void)setExampleText:(NSString *)text image:(UIImage *)image;
 ```
 
-**Not:**:
+**Not:**
 ```objc
 -(void)setExampleText: (NSString *)text image: (UIImage *)image;
 ```
 
-- Private methods should have an underscore suffix. The reason is that just when reading an implementation, it is clear if a method is private or public. Also makes usage of private APIs (which is of course not allowed) more evident. Specially good when refactoring legacy code, to get an understanding of what is going on.
+Private methods should have an underscore suffix. The reason is that just when reading an implementation, it is clear if a method is private or public. Also makes usage of private APIs (which is of course not allowed) more evident. Specially good when refactoring legacy code, to get an understanding of what is going on.
 
 Underscore prefix is reserved for use by Apple, so a sane alternative is underscore suffix.
 
@@ -240,7 +239,7 @@ Underscore prefix is reserved for use by Apple, so a sane alternative is undersc
 }
 ```
 
-- In class implementations, there should be one line between every methods, and one line before and after @implementation. Pragma marks should leave a line before and after.
+In class implementations, there should be one line between every methods, and one line before and after @implementation. Pragma marks should leave a line before and after.
 ***Example:***
 ```objc
 
@@ -270,32 +269,6 @@ Underscore prefix is reserved for use by Apple, so a sane alternative is undersc
 
 ```
 - Method parameters should have no prefix. Use normal names.
-
-## Variables
-
-Variables should be named as descriptively as possible. Single letter variable names should be avoided except in `for()` loops.
-
-Asterisks indicating pointers belong with the variable, e.g., `NSString *text` not `NSString* text` or `NSString * text`, except in the case of constants.
-
-Property definitions should be used in place of naked instance variables whenever possible. Direct instance variable access should be avoided except in initializer methods (`init`, `initWithCoder:`, etc…), `dealloc` methods and within custom setters and getters. For more information on using Accessor Methods in Initializer Methods and dealloc, see [here](https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/MemoryMgmt/Articles/mmPractical.html#//apple_ref/doc/uid/TP40004447-SW6).
-
-**For example:**
-
-```objc
-@interface BMAObject: NSObject
-
-@property (nonatomic) NSString *uuid;
-
-@end
-```
-
-**Not:**
-
-```objc
-@interface BMAObject : NSObject {
-    NSString *uuid;
-}
-```
 
 ## Enumerations
 - We use modern objective-c style, and enumerations should be declared using NS_ENUM macro.
@@ -340,15 +313,18 @@ typedef NS_ENUM(BMACollectionViewLayoutMode, NSUInteger) {
 
 - Prefer atomic/nonatomic to be first in the attribute list. Keeps consistency around the codebase. 
 
-- Prefer using properties for all ivar access. There are many good reasons to do it, as stated [here for example](http://blog.bignerdranch.com/4005-should-i-use-a-property-or-an-instance-variable/). Direct ivar access should be justified. Refactor reckelessly legacy code which still uses instance variables.
+- Prefer using properties for all ivar access. There are many good reasons to do it, as stated [here for example](http://blog.bignerdranch.com/4005-should-i-use-a-property-or-an-instance-variable/). Direct ivar access should be justified. Refactor reckelessly legacy code which still uses instance variables. 
 
 - The only time when ivars should be used is dealloc and init methods. This is because in init and dealloc it's generally best practice to avoid side effects of setting properties directly, and because inside init, the object is still in a partial state.
+
+>For more information on using Accessor Methods in Initializer Methods and dealloc, see [here](https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/MemoryMgmt/Articles/mmPractical.html#//apple_ref/doc/uid/TP40004447-SW6).
+
 
 ## Naming
 
 Apple naming conventions should be adhered to wherever possible, especially those related to [memory management rules](https://developer.apple.com/library/mac/#documentation/Cocoa/Conceptual/MemoryMgmt/Articles/MemoryMgmt.html) ([NARC](http://stackoverflow.com/a/2865194/340508)).
 
-Long, descriptive method and variable names are good.
+Variables should be named as descriptively as possible. Single letter variable names should be avoided except in `for()` loops. Long, descriptive method and variable names are good.
 
 **For example:**
 
@@ -362,7 +338,7 @@ UIButton *settingsButton;
 UIButton *setBut;
 ```
 
-A three letter prefix (e.g. `BMA`) should always be used for class names, categories (especially for categories on Cocoa classes) and constants. Constants should be camel-case with all words capitalized and prefixed by the related class name for clarity.
+A three letter prefix should always be used for class names, categories (especially for categories on Cocoa classes) and constants. Constants should be camel-case with all words capitalized and prefixed by the related class name for clarity. That prefix depends on where the code lays, refer to architecture or tech lead to know which to use (`BPF`, `BPUI`, `BMA`, `HON`, etc)
 
 **For example:**
 
@@ -395,6 +371,7 @@ Instance variables should be camel-case with the leading word being lowercase, a
 **For example:**
 
 ```objc
+// Let compiler to generate those, but if you use them, then write as:
 @synthesize descriptiveVariableName = _descriptiveVariableName;
 ```
 
