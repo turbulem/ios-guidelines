@@ -414,6 +414,8 @@ Block comments should generally be avoided, as code should be as self-documentin
 
 Prefer to document interesting pieces of API instead, specially application platform APIs, or reusable code.
 
+Also attributes like NS_REQUIRES_SUPER, NS_DESIGNATED_INITIALIZER, DEPRECATED_MSG_ATTRIBUTE, and DEPRECATED_ATTRIBUTE to document API and ongoing work when refactoring.
+
 ## Protocols
 Protocol format should be as follows:
 ```objc
