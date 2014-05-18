@@ -14,15 +14,20 @@ Here are some of the documents from Apple that informed the style guide. If some
 ## Table of Contents
 
 * [Dot-Notation Syntax](#dot-notation-syntax)
+* [Code width](#code-width)
 * [Spacing](#spacing)
 * [Conditionals](#conditionals)
-  * [Ternary Operator](#ternary-operator)
+* [Ternary Operator](#ternary-operator)
 * [Error handling](#error-handling)
 * [Methods](#methods)
 * [Variables](#variables)
+* [Enumerations](#enumerations)
+* [Properties](#properties)
 * [Naming](#naming)
 * [Comments](#comments)
+* [Protocols](#protocols)
 * [Init & Dealloc](#init-and-dealloc)
+* [instancetype vs id](#instancetype-vs-id)
 * [Literals](#literals)
 * [CGRect Functions](#cgrect-functions)
 * [Constants](#constants)
@@ -49,12 +54,48 @@ view.backgroundColor = [UIColor orangeColor];
 UIApplication.sharedApplication.delegate;
 ```
 
+The use of dot notation to access other methods is not allowed, even if ObjC as a language would allow it. Dot notation is just syntactic sugar for a method so it would work.
+
+**Example. Not allowed:**
+```objc
+UIApplication *application = UIApplication.sharedApplication
+```
+
+## Code width
+We don't impose a line width limit. We use modern and big screens, even when connected to laptops. Also XCode offers autowrapping.
+
+Even though we don't want to limit the code width, be aware that long method calls and declarations, because ObjC is really verbose, should be separated by parameters with new lines. Use your judgement for this.
+
 ## Spacing
 
 * Indent using 4 spaces. Never indent with tabs. Be sure to set this preference in Xcode.
-* Method braces and other braces (`if`/`else`/`switch`/`while` etc.) always open on the same line as the statement but close on a new line.
 
-**For example:**
+* There should be exactly one blank line between methods to aid in visual clarity and organization. No multiple methods per line.
+
+* The star for pointer types should be adjacent to the variable name, not the type. Applies for all uses (properties, local variables, constants, method types, ...):
+**Example:**
+```objc
+NSString *message = NSLocalizedString(@"bma.intro.message", nil);
+``` 
+**Not:**
+```objc
+NSString* message = NSLocalizedString(@"bma.intro.message", nil);
+``` 
+## Brackets
+Use egyptian brackets for:
+
+* Egyptian brackets and space for methods (`if`/`else`/`switch`/`while` etc.):
+
+**Like this:**
+```objc
+if(user.isHappy) {
+//Do something
+} else {
+//Do something else
+}
+```
+
+**Not:**
 ```objc
 if (user.isHappy) {
 //Do something
@@ -64,34 +105,22 @@ else {
 }
 ```
 
-**Not:**
-```objc
-if(user.isHappy) {
-//Do something
-} else {
-//Do something else
-}
-```
-
-* Use a space between the control structure (`if`/`else`/`switch`/`while` etc.) and the open brace.
-* There should be exactly one blank line between methods to aid in visual clarity and organization. Whitespace within methods should separate functionality, but often there should probably be new methods.
-* `@synthesize` and `@dynamic` should each be declared on new lines in the implementation.
-
-
-## Brackets
-Use egyptian brackets for:
-
-* control structures (if-else, for, switch)
-
 Non egyptian brackets are meant to be used for:
 
 * class implementations (if any)
 * method implementations
 
+**For example:**
+```objc
+- (void)myMethod 
+{
+	//Do something
+}
+```
 
 ## Conditionals
 
-Conditional bodies should always use braces even when a conditional body could be written without braces (e.g., it is one line only) to prevent [errors](https://github.com/NYTimes/objective-c-style-guide/issues/26#issuecomment-22074256). These errors include adding a second line and expecting it to be part of the if-statement. Another, [even more dangerous defect](http://programmers.stackexchange.com/a/16530) may happen where the line "inside" the if-statement is commented out, and the next line unwittingly becomes part of the if-statement. In addition, this style is more consistent with all other conditionals, and therefore more easily scannable.
+Conditional bodies **should always** use braces even when a conditional body could be written without braces (e.g., it is one line only) to prevent [errors](https://www.imperialviolet.org/2014/02/22/applebug.html). These errors include adding a second line and expecting it to be part of the if-statement. Another, [even more dangerous defect](http://programmers.stackexchange.com/a/16530) may happen where the line "inside" the if-statement is commented out, and the next line unwittingly becomes part of the if-statement. In addition, this style is more consistent with all other conditionals, and therefore more easily scannable.
 
 **For example:**
 ```objc
@@ -124,6 +153,23 @@ if ([myValue isEqual:constant]) { ...
 if ([constant isEqual:myValue]) { ...
 ```
 
+Prefer extracting several properties to a meaningful expression, improving readability
+
+***Example:***
+```objc
+BOOL stateForDismissalIsCorrect = [object something] && [object somethingElse] && ithinkSo;
+if (stateForDismissalIsCorrect) {
+if ([object stateForDismissalIsCorrect]) {
+```
+
+***Refactor these:***
+```objc
+if ([object something] && [object somethingElse] && ithinkSo) {
+```
+
+Use the 'Golden Path' rule as in [ZDS code style](http://www.cimgf.com/zds-code-style-guide/):
+
+
 ### Ternary Operator
 
 The Ternary operator, ? , should only be used when it increases clarity or code neatness. A single condition is usually all that should be evaluated. Evaluating multiple conditions is usually more understandable as an if statement, or refactored into instance variables.
@@ -131,6 +177,7 @@ The Ternary operator, ? , should only be used when it increases clarity or code 
 **For example:**
 ```objc
 result = a > b ? x : y;
+string = fromServer ?: @"hardcoded";
 ```
 
 **Not:**
@@ -175,7 +222,54 @@ In method signatures, there should be a space after the scope (-/+ symbol). Ther
 -(void)setExampleText: (NSString *)text image: (UIImage *)image;
 ```
 
-Always prefix private methods with underscore! Always!
+- Private methods should have an underscore suffix. The reason is that just when reading an implementation, it is clear if a method is private or public. Also makes usage of private APIs (which is of course not allowed) more evident. Specially good when refactoring legacy code, to get an understanding of what is going on.
+
+Underscore prefix is reserved for use by Apple, so a sane alternative is underscore suffix.
+
+***Example:***
+```objc
+#pragma mark - Processing flow
+
+- (BOOL)shouldFlowContinueWithPersonId_:(NSString *)person {
+}
+
+#pragma mark - API
+
+- (void)processUICallback {
+	[self shouldFlowContinueWithPersonId_:self.personId];
+}
+```
+
+- In class implementations, there should be one line between every methods, and one line before and after @implementation. Pragma marks should leave a line before and after.
+***Example:***
+```objc
+
+@interface BMAPersonViewController ()
+@property (nonatomic, weak) UIButton *settingsButton;
+@end
+
+@implementation BMAPersonViewController
+
+#pragma mark - LifeCycle
+
+- (void)viewDidLoad {
+	// Really small implementation
+}
+
+- (void)viewDidAppear:(BOOL)animated {
+	// Really small implementation
+}
+
+#pragma mark - Settings
+
+- (IBAction)goToSettings:(id)sender {
+	// Really small implementation
+}
+
+@end
+
+```
+- Method parameters should have no prefix. Use normal names.
 
 ## Variables
 
@@ -203,6 +297,53 @@ Property definitions should be used in place of naked instance variables wheneve
 }
 ```
 
+## Enumerations
+- We use modern objective-c style, and enumerations should be declared using NS_ENUM macro.
+- Also, when creating names, make the names autocomplete-friendly, not like they would be in English:
+
+***Example:***
+```objc
+typedef NS_ENUM(BMACollectionViewLayoutMode, NSUInteger) {
+     BMACollectionViewLayoutModeGrid,
+     BMACollectionViewLayoutModeFullscreen
+}
+```
+
+***Not:***
+```objc
+typedef NS_ENUM(BMACollectionViewLayoutMode, NSUInteger) {
+     BMACollectionViewLayoutGridMode,
+     BMACollectionViewLayoutFullscreenMode
+}
+```
+
+## Properties
+- Format for property declaration should have space after @property:
+**Example:**
+```objc
+@interface BMAPerson
+@property (nonatomic, copy, readonly) NSString *identifier;
+@end
+```
+**Not:**
+```objc
+@interface BMAPerson
+@property(nonatomic,copy,readonly) NSString* identifier;
+@end
+```
+
+- `@synthesize` and `@dynamic` should each be declared on new lines in the implementation.
+
+- Attributes should be specific on what memory management should be used. Don't assume strong is default. Always us weak, strong, assign, or copy.
+
+- An atomic property should be marked as such, not left to the default value, which is atomic. This increases readability and awareness to other devs on the nature of this property.
+
+- Prefer atomic/nonatomic to be first in the attribute list. Keeps consistency around the codebase. 
+
+- Prefer using properties for all ivar access. There are many good reasons to do it, as stated [here for example](http://blog.bignerdranch.com/4005-should-i-use-a-property-or-an-instance-variable/). Direct ivar access should be justified. Refactor reckelessly legacy code which still uses instance variables.
+
+- The only time when ivars should be used is dealloc and init methods. This is because in init and dealloc it's generally best practice to avoid side effects of setting properties directly, and because inside init, the object is still in a partial state.
+
 ## Naming
 
 Apple naming conventions should be adhered to wherever possible, especially those related to [memory management rules](https://developer.apple.com/library/mac/#documentation/Cocoa/Conceptual/MemoryMgmt/Articles/MemoryMgmt.html) ([NARC](http://stackoverflow.com/a/2865194/340508)).
@@ -221,18 +362,30 @@ UIButton *settingsButton;
 UIButton *setBut;
 ```
 
-A three letter prefix (e.g. `BMA`) should always be used for class names, categories (especially for categories on Cocoa classes) and constants, however may be omitted for Core Data entity names. Constants should be camel-case with all words capitalized and prefixed by the related class name for clarity.
+A three letter prefix (e.g. `BMA`) should always be used for class names, categories (especially for categories on Cocoa classes) and constants. Constants should be camel-case with all words capitalized and prefixed by the related class name for clarity.
 
 **For example:**
 
 ```objc
 static const NSTimeInterval BMAProfileViewControllerNavigationFadeAnimationDuration = 0.4;
+
+@interface NSAttributedString (BMAHTMLParsing)
+
+- (void)bma_attributedStringFromHTML:(NSString *)string;
+
+@end
 ```
 
 **Not:**
 
 ```objc
 static const NSTimeInterval fadetime = 0.2;
+
+@interface NSAttributedString (HTMLParsing)
+
+- (void)attributedStringFromHTML:(NSString *)string;
+
+@end
 ```
 
 Properties and local variables should be camel-case with the leading word being lowercase. 
@@ -257,6 +410,7 @@ Delegate methods should be always have the caller as first parameter
 
 ```objc
 - (void)lessonController:(LessonController *)lessonController didSelectLesson:(Lesson *)lesson;
+- (void)lessonControllerDidFinish:(LessonController *)lessonController;
 ```
 
 **Not:**
@@ -272,8 +426,26 @@ When using properties, instance variables should always be accessed and mutated 
 ## Comments
 
 When they are needed, comments should be used to explain **why** a particular piece of code does something. Any comments that are used must be kept up-to-date or deleted.
+When comment is inserted, not allowed:
+- Name of person writing the comment: Version control will say already
+- JIRA ticket references
+- No code must be commented. Remove it as it will be tracked in version control. Tag the repo if you think it will be needed in future (rarely the case)
 
-Block comments should generally be avoided, as code should be as self-documenting as possible, with only the need for intermittent, few-line explanations. This does not apply to those comments used to generate documentation.
+Block comments should generally be avoided, as code should be as self-documenting as possible, with only the need for intermittent, few-line explanations. This does not apply to those comments used to generate documentation. Having a lots of comments in a single method means that the developer has to excuse himself by not writing clear code. Prefer many small methods with long verbose names.
+
+Prefer to document interesting pieces of API instead, specially application platform APIs, or reusable code.
+
+## Protocols
+Protocol format should be as follows:
+```objc
+@protocol BMAPerson <NSObject>
+// Method rules
+@end
+
+@interface BMAMutualAttraction : NSObject <BMAPerson>
+@property (nonatomic, strong) id<BMAPerson> me;
+@end
+```
 
 ## Header Documentation
 
@@ -302,7 +474,7 @@ The documentation of class should be done using the Doxygen/AppleDoc syntax only
 `init` methods should be structured like this:
 
 ```objc
-- (instancetype)init {
+- (id)init {
     self = [super init]; // or call the designated initalizer
     if (self) {
         // Custom initialization
@@ -312,6 +484,15 @@ The documentation of class should be done using the Doxygen/AppleDoc syntax only
 }
 ```
 
+All classes should use NS_DESIGNATED_INITIALIZER for any declared init methods, even if there is only one. It documents the code in a proper way.
+
+##instancetype vs id
+- Read [this](http://nshipster.com/instancetype/) and [this](https://developer.apple.com/library/ios/releasenotes/ObjectiveC/ModernizationObjC/AdoptingModernObjective-C/AdoptingModernObjective-C.html#//apple_ref/doc/uid/TP40014150) if you don't know what instancetype is
+- For init methods, compiler already has a name convention to cast the type to the return, so there is compiler checking already. Most legacy code and even Apple's frameworks still use id for init methods, and the tool to convert modern objective-c does not convert id in init methods so ***use id always for init methods***. 
+- For factory methods, there are two cases. The two cases better document code by following convetions:
+	- When the factory method can be subclassed: ***use instancetype***
+	- When the factory method is not meant to be subclassed: ***use the type explicitly***
+	
 ## Literals
 
 `NSString`, `NSDictionary`, `NSArray`, and `NSNumber` literals should be used whenever creating immutable instances of those objects. Pay special care that `nil` values not be passed into `NSArray` and `NSDictionary` literals, as this will cause a crash.
@@ -362,24 +543,41 @@ CGFloat width = frame.size.width;
 CGFloat height = frame.size.height;
 ```
 
+You can alternatively use the categories on UIView we have in our platform, which allow for a Three20 or autolayout style to get frame properties:
+
+```objc
+self.button.bma_bottom = self.header.bma_top;
+self.button.bma_width = self.bma_width;
+```
 ## Constants
 
-Constants are preferred over in-line string literals or numbers, as they allow for easy reproduction of commonly used variables and can be quickly changed without the need for find and replace. Constants should be declared as `static` constants and not `#define`s unless explicitly being used as a macro.
+Constants are preferred over in-line string literals or numbers, as they allow for easy reproduction of commonly used variables and can be quickly changed without the need for find and replace. Prefer class or instance methods for constants. The reason is that those constants can 'change' specially important for UI code where different styling can be applied at runtime.
+
+If you declare constants, they should be declared as `static` constants and not `#define`s unless explicitly being used as a macro.
 
 **For example:**
 
 ```objc
-static NSString * const BMAAboutViewControllerTeamName = @"BMA Badoo About View Controller";
+// Preferred
++ (CGFloat)thumbnailHeight {
+	return 50.0;
+}
 
++ (NSString *)nibName {
+	return @"BMADefaultProfileViewController";
+}
+
+// Use those sparingly
+static NSString * const BMADefaultProfileViewControllerNibName = @"nibName";
 static const CGFloat BMAImageThumbnailHeight = 50.0;
 ```
 
 **Not:**
 
 ```objc
-#define CompanyName @"The New York Times Company"
+#define BMADefaultProfileViewControllerNibName @"nibName"
 
-#define thumbnailHeight 2
+#define BMAImageThumbnailHeight 50.0
 ```
 
 ## Enumerated Types
@@ -487,9 +685,7 @@ This will prevent [possible and sometimes prolific crashes](http://cocoasamurai.
 
 ## Xcode project
 
-The physical files should be kept in sync with the Xcode project files in order to avoid file sprawl. Any Xcode groups created should be reflected by folders in the filesystem. Code should be grouped not only by type, but also by feature for greater clarity.
-
-When possible, always turn on "Treat Warnings as Errors" in the target's Build Settings and enable as many [additional warnings](http://boredzo.org/blog/archives/2009-11-07/warnings) as possible. If you need to ignore a specific warning, use [Clang's pragma feature](http://clang.llvm.org/docs/UsersManual.html#controlling-diagnostics-via-pragmas).
+**Always** turn on "Treat Warnings as Errors" in the target's Build Settings and enable as many [additional warnings](http://boredzo.org/blog/archives/2009-11-07/warnings) as possible. If you need to ignore a specific warning, use [Clang's pragma feature](http://clang.llvm.org/docs/UsersManual.html#controlling-diagnostics-via-pragmas).
 
 # Other Objective-C Style Guides
 
