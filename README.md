@@ -36,6 +36,7 @@ Here are some of the documents from Apple that informed the style guide. If some
 * [Booleans](#booleans)
 * [Blocks](#blocks)
 * [Singletons](#singletons)
+* [Unit Tests](#unit-tests)
 * [Xcode Project](#xcode-project)
 
 ## Dot-Notation Syntax
@@ -693,6 +694,75 @@ Nevertheless, needed singleton objects should use a thread-safe pattern for crea
 }
 ```
 This will prevent [possible and sometimes prolific crashes](http://cocoasamurai.blogspot.com/2011/04/singletons-your-doing-them-wrong.html).
+
+## Unit Tests
+Unit tests is generally not considered by dev teams, but as code, documentation, and important quality tool, they deserve a lot of thought and care. Unit tests should allow devs to move faster and develop faster, not make them lag and suffer. That is why quality tests is as important as quality code, and we care as an engineering team.
+
+Internally we use XC and SenTestKit, just because the test base is large enough that switching them to other alternatives is a lot of work. Also alternatives are just syntactic sugar + matchers. We can use matcher libraries if needed.
+
+Write tests. Period.
+Prefer writing tests **before** the code under test. Period.
+
+General rule is one assert per test. This should be taken extreme many times, as it
+encourages refactoring tests to reuse small utility methods. It also improves tests
+readability, which is of utterly importance once test is more than 5 mins old. There are rare cases where more asserts are needed, those are cases where we check values of the same object after some state is set:
+
+```objc
+- (void)testCase {
+        [self stubModelWithFullData];
+        MyCell* cell = [self.underTest provideMyCell];
+        STAssertEqualObjects(cell.shownName, self.fakeModel.name, nil);
+        STAssertEqualObjects(cell.shownSurname, self.fakeModel.surname, nil);
+        STAssertNotNil(cell.avatar, nil);
+}
+```
+
+***Not allowed:***
+```objc
+test {
+	STAssertTrue(self.myObject.correctState, nil);
+	[self stubDelegateAndExpectCallbackWithSuccess];
+	[self.myObject performCalculations];
+	STAssertNotNil(self.myObject.name, nil);
+	[self.myDelegateMock verify];
+}
+```
+We follow a strict naming convention for XC or ST testcases. It is of great importance because ideally as a developer you want to read the test method and know what it does before even looking at the test code. Also important for error messages. Test names should follow the pattern:
+```objc
+	testThat_GivenPreconditions_WhenSomethingHappens_ThenIAmExpectingSomething
+```
+
+Generally if a test has 'and' in it, it generally means it should be split in two and dev is 
+lazy:
+***Not allowed:***
+```objc
+testThat_GivenX_WhenServerLoadsWhileIReload_AndILookBack_AndStarsAlign_ThenMagicallyTrue
+```
+
+Try to keep tests 3 lines, generally matching the GIVEN_WHEN_THEN condition in the test name. Refactor ruthlessly if needed to achieve it. Sometimes it's not possible because of mocking setup, but long test methods are a different type of `smell` we want to avoid.
+
+Don't use any of the 'string' parameters in macro. Leave them to nil, and make the test method name be long and meaningful. Those string comments tend to be unmaintained, and copy pasted from somewhere else. XCTest framework also lets you not specify any string at all, reducing typing.
+
+***Not allowed:***
+```objc
+STAssertTrue(myCondition, @"When moon moves, then the angle between our phone and user hand slightly moved. Thus expecting condition to be true");
+```
+
+***Should be:***
+```objc
+STAssertTrue(angleIsSlightlyMovedWhenMovedMoon, nil)
+```
+Under test goes first in assertions. This improves readability as generally errors are '<first value> should be equal to <second value>. Thus <first value> is not constant, and <second value> is expected value:
+
+***Example:***
+```objc
+STAssertEqualObjects(resultString, @"Hello", nil);
+```
+
+***Incorrect:***
+```objc
+STAssertEqualObjects(@"Hello", resultString, nil);
+```
 
 ## Xcode project
 
