@@ -223,7 +223,7 @@ In method signatures, there should be a space after the scope (-/+ symbol). Ther
 -(void)setExampleText: (NSString *)text image: (UIImage *)image;
 ```
 
-Private methods should have an underscore suffix. The reason is that just when reading an implementation, it is clear if a method is private or public. Also makes usage of private APIs (which is of course not allowed) more evident. Specially good when refactoring legacy code, to get an understanding of what is going on.
+No special requirements for private methods. They can be named as normal methods.
 
 Underscore prefix is reserved for use by Apple, so a sane alternative is underscore suffix.
 
