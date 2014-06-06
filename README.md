@@ -469,7 +469,7 @@ All classes should use NS_DESIGNATED_INITIALIZER for any declared init methods, 
 
 ##instancetype vs id
 - Read [this](http://nshipster.com/instancetype/) and [this](https://developer.apple.com/library/ios/releasenotes/ObjectiveC/ModernizationObjC/AdoptingModernObjective-C/AdoptingModernObjective-C.html#//apple_ref/doc/uid/TP40014150) if you don't know what instancetype is
-- For init methods, compiler already has a name convention to cast the type to the return, so there is compiler checking already. Most legacy code and even Apple's frameworks still use id for init methods, and the tool to convert modern objective-c does not convert id in init methods so ***use id always for init methods***. 
+- For init methods, we should use modern ObjC conventions, so ***use instancetype always for init methods***.
 - For factory methods, there are two cases. The two cases better document code by following convetions:
 	- When the factory method can be subclassed: ***use instancetype***
 	- When the factory method is not meant to be subclassed: ***use the type explicitly***
