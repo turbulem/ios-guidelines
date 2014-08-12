@@ -653,17 +653,19 @@ Using blocks has several memory caveats, which can cause memory leaks in the lon
 
 When accessing self from **any** block, always declare a weak self. **Always**. It is true that it's not needed for any type of block, if the block is not retained by the caller, as for example in inline animation blocks, but doing so reduces side effects of refactoring. i.e: moving a block inserted in place to a property. We want to be agile and refactor ruthlessly if necessary, so this rule is very important to reduce side effects.
 
-We have a macro to declare weak self. We may adopt libextobjc [@weakify](http://aceontech.com/objc/ios/2014/01/10/weakify-a-more-elegant-solution-to-weakself.html), it really does not matter.
+We use libextobjc macros [@weakify/@strongify](http://aceontech.com/objc/ios/2014/01/10/weakify-a-more-elegant-solution-to-weakself.html)
+
 
 ***Example:***
 ```objc
 // Always use weak reference to self, even if it will not cause a retain cycle
-BMA_WEAK_SELF
+@weakify(self);
 [UIView animateWithDuration:(animated ? 0.2 : 0.0) animations:^{
-	weakSelf.inputView.hidden = hidden;
-	weakSelf.inputView.userInteractionEnabled = !hidden;
-    [weakSelf updateTableViewContentInsets];
-    [weakSelf updateScrollIndicatorInsets];
+	@strongify(self);
+	self.inputView.hidden = hidden;
+	self.inputView.userInteractionEnabled = !hidden;
+	[self updateTableViewContentInsets];
+    	[self updateScrollIndicatorInsets];
     }];
 ```
 
@@ -672,12 +674,10 @@ BMA_WEAK_SELF
 [UIView animateWithDuration:(animated ? 0.2 : 0.0) animations:^{
 	self.inputView.hidden = hidden;
 	self.inputView.userInteractionEnabled = !hidden;
-    [self updateTableViewContentInsets];
-    [self updateScrollIndicatorInsets];
+	[self updateTableViewContentInsets];
+	[self updateScrollIndicatorInsets];
     }];
 ```
-
-Some argue (with a lot of reason) that if self is `weakified` in a block, then the operation inside the block can find that the object is turned to nil halfway the execution if it's block. In those cases you may need to create a strong reference to the weak reference (`strongify`). Use those sparingly and within reason, as many times it's not really important if an object went out of memory when executing the block. Also this need exposes some deeper architecture problems.
 
 ## Singletons
 
