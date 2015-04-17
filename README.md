@@ -41,7 +41,7 @@ Here are some of the documents from Apple that informed the style guide. If some
 * [Xcode Project](#xcode-project)
 
 ## Nullability
-Since XCode 6.3, Apple has [introduced nullability annotations](https://developer.apple.com/swift/blog/?id=25) to the objc compiler. This allows for a more expressive API and it is specially important for Objective-C code 'seen' from Swift.
+Since XCode 6.3, Apple has [introduced nullability annotations](https://developer.apple.com/swift/blog/?id=25) to the Objective-C compiler. This allows for a more expressive API and it is specially important for Objective-C code 'seen' from Swift.
 
 We want to enforce usage of this annotations for all code, be it application level or iOS Badoo platform level.
 
@@ -58,10 +58,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL myBoolean;
 @property (nonatomic, copy, readonly, nullable) NSString *myOtherString;
 
-@property (nonatomic, weak, nullable) id delegate; //Weak properties must be nullable. Compiler will not complain if never set to nil by the programmer. If not annotated as nullable, property still set to nil by runtime though.
+// Weak properties must be nullable. Compiler will not complain if never set to nil by
+// the programmer. If not annotated as nullable, property still set to nil by runtime
+@property (nonatomic, weak, nullable) id delegate; though.
 
 - (instancetype)initWithString:(NSString *)string otherString:(nullable NSString *)otherString;
-
 
 @end
 
@@ -73,7 +74,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 // Don't forget to annotate class extensions and categories
 @interface MyClass()
-
+//
 @end
 
 NS_ASSUME_NONNULL_END
@@ -87,7 +88,6 @@ There is not much to these annotations but you need to be aware of:
 - Annotations don't change the generated code.
 - Weak properties: They are nullified by the runtime. If not annotated with nil, API does not express intent fully. Only generates a warning when explicitly set to nil - [example](https://gist.github.com/DarthMike/1add91a7f5b5bf18c326)
 - There is mostly no sense using nullability annotations outside of interface declarations.
-
 
 ## Dot-Notation Syntax
 
