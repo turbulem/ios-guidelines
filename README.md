@@ -89,6 +89,29 @@ There is not much to these annotations but you need to be aware of:
 - Weak properties: They are nullified by the runtime. If not annotated with nil, API does not express intent fully. Only generates a warning when explicitly set to nil - [example](https://gist.github.com/DarthMike/1add91a7f5b5bf18c326)
 - There is mostly no sense using nullability annotations outside of interface declarations.
 
+###Gotcha
+Nullability is just an annotation for the compiler. This means that runtime code does not change and there are times that annotation can receive (or return) differently as annotated. Here is an example:
+
+```objc
+// Your object
+
+NS_ASSUME_NONNULL_BEGIN
+
+@interface ViewController : UIViewController
+@property (nonatomic, copy) NSString *nonNullString;
+@end
+
+NS_ASSUME_NONNULL_END
+
+// Then you use it as:
+NSString *aString = [NSString stringWithFormat:@"helloworld %.1f",1.0];
+aString = nil;
+controller.nonNullString = aString; // No warning. Generated code does not change.
+controller.nonNullString = nil; // Warning
+```
+
+So Objective-C is as safe as is has always been. Annotations express intention but don't change the generated code. Checks for nil are still required in the implementation.
+
 ## Dot-Notation Syntax
 
 Dot-notation should **always** be used for accessing and mutating properties. Bracket notation is preferred in all other instances.
