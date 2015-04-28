@@ -13,6 +13,7 @@ Here are some of the documents from Apple that informed the style guide. If some
 
 ## Table of Contents
 
+* [Nullability](#nullability)
 * [Dot-Notation Syntax](#dot-notation-syntax)
 * [Code width](#code-width)
 * [Spacing](#spacing)
@@ -38,6 +39,78 @@ Here are some of the documents from Apple that informed the style guide. If some
 * [Singletons](#singletons)
 * [Unit Tests](#unit-tests)
 * [Xcode Project](#xcode-project)
+
+## Nullability
+Since XCode 6.3, Apple has [introduced nullability annotations](https://developer.apple.com/swift/blog/?id=25) to the Objective-C compiler. This allows for a more expressive API and it is specially important for Objective-C code 'seen' from Swift.
+
+We want to enforce usage of this annotations for all code, be it application level or iOS Badoo platform level.
+
+The adoption of annotations is straightforward. The standard we adopt is using the `NS_ASSUME_NONNULL_BEGIN` and `NS_ASSUME_NONNULL_END` on all headers. Then indicate nullability for the pointers that can be so.
+
+Let's review how you can use it in an actual example:
+```objc
+// MyClass.h
+
+NS_ASSUME_NONNULL_BEGIN
+
+@interface MyClass : NSObject
+@property (nonatomic, copy) NSString *myString; //Assumed non-nil
+@property (nonatomic, assign) BOOL myBoolean;
+@property (nonatomic, copy, readonly, nullable) NSString *myOtherString;
+
+// Weak properties must be nullable. Compiler will not complain if never set to nil by
+// the programmer. If not annotated as nullable, property still set to nil by runtime
+@property (nonatomic, weak, nullable) id delegate; though.
+
+- (instancetype)initWithString:(NSString *)string otherString:(nullable NSString *)otherString;
+
+@end
+
+NS_ASSUME_NONNULL_END
+
+// MyClass.m
+
+NS_ASSUME_NONNULL_BEGIN
+
+// Don't forget to annotate class extensions and categories
+@interface MyClass()
+//
+@end
+
+NS_ASSUME_NONNULL_END
+
+@implementation MyClass
+//
+@end
+```
+
+There is not much to these annotations but you need to be aware of:
+- Annotations don't change the generated code.
+- Weak properties: They are nullified by the runtime. If not annotated with nil, API does not express intent fully. Only generates a warning when explicitly set to nil - [example](https://gist.github.com/DarthMike/1add91a7f5b5bf18c326)
+- There is mostly no sense using nullability annotations outside of interface declarations.
+
+###Gotcha
+Nullability is just an annotation for the compiler. This means that runtime code does not change and there are times that annotation can receive (or return) differently as annotated. Here is an example:
+
+```objc
+// Your object
+
+NS_ASSUME_NONNULL_BEGIN
+
+@interface ViewController : UIViewController
+@property (nonatomic, copy) NSString *nonNullString;
+@end
+
+NS_ASSUME_NONNULL_END
+
+// Then you use it as:
+NSString *aString = [NSString stringWithFormat:@"helloworld %.1f",1.0];
+aString = nil;
+controller.nonNullString = aString; // No warning. Generated code does not change.
+controller.nonNullString = nil; // Warning
+```
+
+So Objective-C is as safe as is has always been. Annotations express intention but don't change the generated code. Checks for nil are still required in the implementation.
 
 ## Dot-Notation Syntax
 
@@ -77,11 +150,11 @@ Even though we don't want to limit the code width, be aware that long method cal
 **Example:**
 ```objc
 NSString *message = NSLocalizedString(@"bma.intro.message", nil);
-``` 
+```
 **Not:**
 ```objc
 NSString* message = NSLocalizedString(@"bma.intro.message", nil);
-``` 
+```
 ## Brackets
 Use egyptian brackets for:
 
@@ -113,9 +186,9 @@ Non egyptian brackets are meant to be used for:
 
 **For example:**
 ```objc
-- (void)myMethod 
+- (void)myMethod
 {
-	//Do something
+    //Do something
 }
 ```
 
@@ -237,7 +310,7 @@ Underscore prefix is reserved for use by Apple, so a sane alternative is undersc
 #pragma mark - API
 
 - (void)processUICallback {
-	[self shouldFlowContinueWithPersonId_:self.personId];
+    [self shouldFlowContinueWithPersonId_:self.personId];
 }
 ```
 
@@ -254,17 +327,17 @@ In class implementations, there should be one line between every methods, and on
 #pragma mark - LifeCycle
 
 - (void)viewDidLoad {
-	// Really small implementation
+    // Really small implementation
 }
 
 - (void)viewDidAppear:(BOOL)animated {
-	// Really small implementation
+    // Really small implementation
 }
 
 #pragma mark - Settings
 
 - (IBAction)goToSettings:(id)sender {
-	// Really small implementation
+    // Really small implementation
 }
 
 @end
@@ -313,9 +386,9 @@ typedef NS_ENUM(BMACollectionViewLayoutMode, NSUInteger) {
 
 - An atomic property should be marked as such, not left to the default value, which is atomic. This increases readability and awareness to other devs on the nature of this property.
 
-- Prefer atomic/nonatomic to be first in the attribute list. Keeps consistency around the codebase. 
+- Prefer atomic/nonatomic to be first in the attribute list. Keeps consistency around the codebase.
 
-- Prefer using properties for all ivar access. There are many good reasons to do it, as stated [here for example](http://blog.bignerdranch.com/4005-should-i-use-a-property-or-an-instance-variable/). Direct ivar access should be justified. Refactor reckelessly legacy code which still uses instance variables. 
+- Prefer using properties for all ivar access. There are many good reasons to do it, as stated [here for example](http://blog.bignerdranch.com/4005-should-i-use-a-property-or-an-instance-variable/). Direct ivar access should be justified. Refactor reckelessly legacy code which still uses instance variables.
 
 - The only time when ivars should be used is dealloc and init methods. This is because in init and dealloc it's generally best practice to avoid side effects of setting properties directly, and because inside init, the object is still in a partial state.
 
@@ -366,7 +439,7 @@ static const NSTimeInterval fadetime = 0.2;
 @end
 ```
 
-Properties and local variables should be camel-case with the leading word being lowercase. 
+Properties and local variables should be camel-case with the leading word being lowercase.
 
 Instance variables should be camel-case with the leading word being lowercase, and should be prefixed with an underscore. This is consistent with instance variables synthesized automatically by LLVM. **If LLVM can synthesize the variable automatically, then let it.**
 
@@ -471,9 +544,9 @@ All classes should use NS_DESIGNATED_INITIALIZER for any declared init methods, 
 - Read [this](http://nshipster.com/instancetype/) and [this](https://developer.apple.com/library/ios/releasenotes/ObjectiveC/ModernizationObjC/AdoptingModernObjective-C/AdoptingModernObjective-C.html#//apple_ref/doc/uid/TP40014150) if you don't know what instancetype is
 - For init methods, we should use modern ObjC conventions, so ***use instancetype always for init methods***.
 - For factory methods, there are two cases. The two cases better document code by following convetions:
-	- When the factory method can be subclassed: ***use instancetype***
-	- When the factory method is not meant to be subclassed: ***use the type explicitly***
-	
+    - When the factory method can be subclassed: ***use instancetype***
+    - When the factory method is not meant to be subclassed: ***use the type explicitly***
+
 ## Literals
 
 `NSString`, `NSDictionary`, `NSArray`, and `NSNumber` literals should be used whenever creating immutable instances of those objects. Pay special care that `nil` values not be passed into `NSArray` and `NSDictionary` literals, as this will cause a crash.
@@ -541,11 +614,11 @@ If you declare constants, they should be declared as `static` constants and not 
 ```objc
 // Preferred
 + (CGFloat)thumbnailHeight {
-	return 50.0;
+    return 50.0;
 }
 
 + (NSString *)nibName {
-	return @"BMADefaultProfileViewController";
+    return @"BMADefaultProfileViewController";
 }
 
 // Use those sparingly
@@ -661,21 +734,21 @@ We use libextobjc macros [@weakify/@strongify](http://aceontech.com/objc/ios/201
 // Always use weak reference to self, even if it will not cause a retain cycle
 @weakify(self);
 [UIView animateWithDuration:(animated ? 0.2 : 0.0) animations:^{
-	@strongify(self);
-	self.inputView.hidden = hidden;
-	self.inputView.userInteractionEnabled = !hidden;
-	[self updateTableViewContentInsets];
-    	[self updateScrollIndicatorInsets];
+    @strongify(self);
+    self.inputView.hidden = hidden;
+    self.inputView.userInteractionEnabled = !hidden;
+    [self updateTableViewContentInsets];
+        [self updateScrollIndicatorInsets];
     }];
 ```
 
 ***Never:***
 ```objc
 [UIView animateWithDuration:(animated ? 0.2 : 0.0) animations:^{
-	self.inputView.hidden = hidden;
-	self.inputView.userInteractionEnabled = !hidden;
-	[self updateTableViewContentInsets];
-	[self updateScrollIndicatorInsets];
+    self.inputView.hidden = hidden;
+    self.inputView.userInteractionEnabled = !hidden;
+    [self updateTableViewContentInsets];
+    [self updateScrollIndicatorInsets];
     }];
 ```
 
@@ -722,19 +795,19 @@ readability, which is of utterly importance once test is more than 5 mins old. T
 ***Not allowed:***
 ```objc
 test {
-	STAssertTrue(self.myObject.correctState, nil);
-	[self stubDelegateAndExpectCallbackWithSuccess];
-	[self.myObject performCalculations];
-	STAssertNotNil(self.myObject.name, nil);
-	[self.myDelegateMock verify];
+    STAssertTrue(self.myObject.correctState, nil);
+    [self stubDelegateAndExpectCallbackWithSuccess];
+    [self.myObject performCalculations];
+    STAssertNotNil(self.myObject.name, nil);
+    [self.myDelegateMock verify];
 }
 ```
 We follow a strict naming convention for XC or ST testcases. It is of great importance because ideally as a developer you want to read the test method and know what it does before even looking at the test code. Also important for error messages. Test names should follow the pattern:
 ```objc
-	testThat_GivenPreconditions_WhenSomethingHappens_ThenIAmExpectingSomething
+    testThat_GivenPreconditions_WhenSomethingHappens_ThenIAmExpectingSomething
 ```
 
-Generally if a test has 'and' in it, it generally means it should be split in two and dev is 
+Generally if a test has 'and' in it, it generally means it should be split in two and dev is
 lazy:
 ***Not allowed:***
 ```objc
