@@ -140,6 +140,52 @@ We don't impose a line width limit. We use modern and big screens, even when con
 
 Even though we don't want to limit the code width, be aware that long method calls and declarations, because ObjC is really verbose, should be separated by parameters with new lines. Use your judgement for this.
 
+
+## Code Organization
+
+Use `#pragma mark -` to categorize methods in functional groupings and protocol/delegate implementations following this general structure.
+Strive for short and descriptive names, and try not leave them blank (like "#pragma mark - ").
+
+```objc
+#pragma mark - Lifecycle
+
+- (instancetype)init {}
+- (void)dealloc {}
+- (void)viewDidLoad {}
+- (void)viewWillAppear:(BOOL)animated {}
+- (void)didReceiveMemoryWarning {}
+
+#pragma mark - Custom Accessors
+
+- (void)setCustomProperty:(id)value {}
+- (id)customProperty {}
+
+#pragma mark - IBActions
+
+- (IBAction)submitData:(id)sender {}
+
+#pragma mark - Public
+
+- (void)publicMethod {}
+
+#pragma mark - Private
+
+- (void)privateMethod {}
+
+#pragma mark - Protocol conformance
+#pragma mark - UITextFieldDelegate
+#pragma mark - UITableViewDataSource
+#pragma mark - UITableViewDelegate
+
+#pragma mark - NSCopying
+
+- (id)copyWithZone:(NSZone *)zone {}
+
+#pragma mark - NSObject
+
+- (NSString *)description {}
+```
+
 ## Spacing
 
 * Indent using 4 spaces. Never indent with tabs. Be sure to set this preference in Xcode.
