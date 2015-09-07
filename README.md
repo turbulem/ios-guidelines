@@ -41,7 +41,7 @@ Here are some of the documents from Apple that informed the style guide. If some
 * [Xcode Project](#xcode-project)
 
 ## Nullability
-Since XCode 6.3, Apple has [introduced nullability annotations](https://developer.apple.com/swift/blog/?id=25) to the Objective-C compiler. This allows for a more expressive API and it is specially important for Objective-C code 'seen' from Swift.
+Since Xcode 6.3, Apple has [introduced nullability annotations](https://developer.apple.com/swift/blog/?id=25) to the Objective-C compiler. This allows for a more expressive API and it is specially important for Objective-C code 'seen' from Swift.
 
 We want to enforce usage of this annotations for all code, be it application level or iOS Badoo platform level.
 
@@ -134,6 +134,13 @@ The use of dot notation to access other methods is not allowed, even if ObjC as 
 ```objc
 UIApplication *application = UIApplication.sharedApplication
 ```
+Bracket notation is also to be used for [getter methods](https://developer.apple.com/library/ios/documentation/Cocoa/Conceptual/ProgrammingWithObjectiveC/EncapsulatingData/EncapsulatingData.html#//apple_ref/doc/uid/TP40011210-CH5-SW2):
+```objc
+@property (getter=isFinished) BOOL finished;
+if ([operation isFinished]) // Correct
+if (operation.finished) // Correct
+if (operation.isFinished) // Wrong
+```
 
 ## Code width
 We don't impose a line width limit. We use modern and big screens, even when connected to laptops. Also XCode offers autowrapping.
@@ -202,36 +209,31 @@ NSString *message = NSLocalizedString(@"bma.intro.message", nil);
 NSString* message = NSLocalizedString(@"bma.intro.message", nil);
 ```
 ## Brackets
-Use egyptian brackets for:
 
-Egyptian brackets and space for methods (`if`/`else`/`switch`/`while` etc.):
+Egyptian brackets are to be used for both method implementations and conditions (`if`/`else`/`switch`/`while` etc.):
 
 **Like this:**
 ```objc
-if(user.isHappy) {
-//Do something
+if ([user isHappy]) {
+    // Do something
 } else {
-//Do something else
+    // Do something else
+}
+
+- (void)myMethod {
+    // Do something
 }
 ```
 
 **Not:**
 ```objc
-if (user.isHappy) {
-//Do something
+if ([user isHappy]) {
+    //Do something
 }
 else {
-//Do something else
+    //Do something else
 }
-```
 
-Non egyptian brackets are meant to be used for:
-
-* class implementations (if any)
-* method implementations
-
-**For example:**
-```objc
 - (void)myMethod
 {
     //Do something
@@ -342,23 +344,7 @@ In method signatures, there should be a space after the scope (-/+ symbol). Ther
 -(void)setExampleText: (NSString *)text image: (UIImage *)image;
 ```
 
-No special requirements for private methods. They can be named as normal methods.
-
-Underscore prefix is reserved for use by Apple, so a sane alternative is underscore suffix.
-
-***Example:***
-```objc
-#pragma mark - Processing flow
-
-- (BOOL)shouldFlowContinueWithPersonId_:(NSString *)person {
-}
-
-#pragma mark - API
-
-- (void)processUICallback {
-    [self shouldFlowContinueWithPersonId_:self.personId];
-}
-```
+No special requirements for private methods. They can be named as normal methods, but do not use underscore prefix as it is reserved for use by Apple.
 
 In class implementations, there should be one line between every methods, and one line before and after @implementation. Pragma marks should leave a line before and after.
 ***Example:***
@@ -392,7 +378,7 @@ In class implementations, there should be one line between every methods, and on
 - Method parameters should have no prefix. Use normal names.
 
 ## Enumerations
-- We use modern objective-c style, and enumerations should be declared using NS_ENUM macro.
+- We use modern Objective-C style, and enumerations should be declared using `NS_ENUM` macro.
 - Also, when creating names, make the names autocomplete-friendly, not like they would be in English:
 
 ***Example:***
