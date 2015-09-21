@@ -28,11 +28,13 @@ Here are some of the documents from Apple that informed the style guide. If some
 * [Protocols](#protocols)
 * [Init & Dealloc](#init-and-dealloc)
 * [instancetype vs id](#instancetype-vs-id)
+* [alloc-init vs new](#alloc-init-vs-new)
 * [Literals](#literals)
 * [CGRect Functions](#cgrect-functions)
 * [Constants](#constants)
 * [Enumerated Types](#enumerated-types)
 * [Private Properties](#private-properties)
+* [Private Headers](#private-headers)
 * [Images](#images)
 * [Booleans](#booleans)
 * [Blocks](#blocks)
@@ -128,7 +130,7 @@ view.backgroundColor = [UIColor orangeColor];
 UIApplication.sharedApplication.delegate;
 ```
 
-The use of dot notation to access other methods is not allowed, even if ObjC as a language would allow it. Dot notation is just syntactic sugar for a method so it would work.
+The use of dot notation to access other methods is not allowed, even if Objective-C as a language would allow it. Dot notation is just syntactic sugar for a method so it would work.
 
 **Example. Not allowed:**
 ```objc
@@ -143,15 +145,15 @@ if (operation.isFinished) // Wrong
 ```
 
 ## Code width
-We don't impose a line width limit. We use modern and big screens, even when connected to laptops. Also XCode offers autowrapping.
+We don't impose a line width limit. We use modern and big screens, even when connected to laptops. Also Xcode offers autowrapping.
 
-Even though we don't want to limit the code width, be aware that long method calls and declarations, because ObjC is really verbose, should be separated by parameters with new lines. Use your judgement for this.
+Even though we don't want to limit the code width, be aware that long method calls and declarations, because Objective-C is really verbose, should be separated by parameters with new lines. Use your judgement for this.
 
 
-## Code Organization
+## Code Organisation
 
 Use `#pragma mark -` to categorize methods in functional groupings and protocol/delegate implementations following this general structure.
-Strive for short and descriptive names, and try not leave them blank (like "#pragma mark - ").
+Strive for short and descriptive names, and try not to leave them blank (like `#pragma mark - `).
 
 ```objc
 #pragma mark - Lifecycle
@@ -197,7 +199,7 @@ Strive for short and descriptive names, and try not leave them blank (like "#pra
 
 * Indent using 4 spaces. Never indent with tabs. Be sure to set this preference in Xcode.
 
-* There should be exactly one blank line between methods to aid in visual clarity and organization. No multiple methods per line.
+* There should be exactly one blank line between methods to aid in visual clarity and organisation. No multiple methods per line.
 
 * The star for pointer types should be adjacent to the variable name, not the type. Applies for all uses (properties, local variables, constants, method types, ...):
 **Example:**
@@ -263,6 +265,8 @@ or
 if (!error) return success;
 ```
 
+See [Apple SSL bug](https://www.imperialviolet.org/2014/02/22/applebug.html) if you're not sure about this recommendation.
+
 Always avoid Yoda conditions.
 
 **For example:**
@@ -281,12 +285,25 @@ Prefer extracting several properties to a meaningful expression, improving reada
 ```objc
 BOOL stateForDismissalIsCorrect = [object something] && [object somethingElse] && ithinkSo;
 if (stateForDismissalIsCorrect) {
-if ([object stateForDismissalIsCorrect]) {
+}
 ```
 
 ***Refactor these:***
 ```objc
 if ([object something] && [object somethingElse] && ithinkSo) {
+}
+```
+
+Do not check for presence of delegate when checking optional methods:
+
+**For example:**
+```objc
+if ([self.delegate respondsToSelector:@selector(...)]) { ...
+```
+
+**Not:**
+```objc
+if (self.delegate && [self.delegate respondsToSelector:@selector(...)]) { ...
 ```
 
 Use the 'Golden Path' rule as in [ZDS code style](http://www.cimgf.com/zds-code-style-guide/).
@@ -344,7 +361,7 @@ In method signatures, there should be a space after the scope (-/+ symbol). Ther
 -(void)setExampleText: (NSString *)text image: (UIImage *)image;
 ```
 
-No special requirements for private methods. They can be named as normal methods, but do not use underscore prefix as it is reserved for use by Apple.
+There are no special requirements for private methods. They can be named as normal methods, but do not use underscore prefix as it is [reserved for use by Apple](https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/CodingGuidelines/Articles/NamingMethods.html#//apple_ref/doc/uid/20001282-1003829-BCIBDJCA).
 
 In class implementations, there should be one line between every methods, and one line before and after @implementation. Pragma marks should leave a line before and after.
 ***Example:***
@@ -377,6 +394,7 @@ In class implementations, there should be one line between every methods, and on
 ```
 - Method parameters should have no prefix. Use normal names.
 
+
 ## Enumerations
 - We use modern Objective-C style, and enumerations should be declared using `NS_ENUM` macro.
 - Also, when creating names, make the names autocomplete-friendly, not like they would be in English:
@@ -398,6 +416,30 @@ typedef NS_ENUM(BMACollectionViewLayoutMode, NSUInteger) {
 ```
 
 ## Properties
+
+Prefer to use properties instead of methods when dealing with *state*, but not *behaviour*.
+
+**For example:**
+``` objc
+@interface BMAProfileController : UIViewController
+
+@property (nonatomic) BMAProfile *profile;
+
+@end
+```
+
+**Not:**
+``` objc
+@interface BMAProfileController : UIViewController
+
+- (BMAProfile *)profile;
+- (void)setProfile:(BMAProfile *)profile;
+
+@end
+```
+
+For sure, `init`, `dealloc` and accessors are to be methods. 
+
 - Format for property declaration should have space after @property:
 **Example:**
 ```objc
@@ -414,17 +456,53 @@ typedef NS_ENUM(BMACollectionViewLayoutMode, NSUInteger) {
 
 - `@synthesize` and `@dynamic` should each be declared on new lines in the implementation.
 
-- Attributes should be specific on what memory management should be used. Don't assume strong is default. Always us weak, strong, assign, or copy.
+- Do not be too verbose with attributes: no necessity to specify attributes used by default, but be specific when it's needed, and don't forget `atomic` is used by default
 
-- An atomic property should be marked as such, not left to the default value, which is atomic. This increases readability and awareness to other devs on the nature of this property.
+**Example:**
+```objc
+@interface BMAPerson
+@property (nonatomic) NSUInteger numberOfCommonPlaces;
+@property (nonatomic) NSArray *commonPlaces;
+@property (nonatomic, weak) id<BMAPersonDelegate> delegate;
+@end
+```
+**Not:**
+```objc
+@interface BMAPerson
+@property (nonatomic, assign) NSUInteger numberOfCommonPlaces; // assign is used by default for integers
+@property (strong) NSArray *commonPlaces; // shouldn't be atomic unless it's really needed, and strong is used by default for instance types
+@property (nonatomic) id<BMAPersonDelegate> delegate; // delegates are not owned
+@end
+```
 
-- Prefer atomic/nonatomic to be first in the attribute list. Keeps consistency around the codebase.
+- An atomic property should be marked as such, not left to the default value, which is `atomic`. This increases readability and awareness to other developers on the nature of this property.
 
-- Prefer using properties for all ivar access. There are many good reasons to do it, as stated [here for example](http://blog.bignerdranch.com/4005-should-i-use-a-property-or-an-instance-variable/). Direct ivar access should be justified. Refactor reckelessly legacy code which still uses instance variables.
+- Prefer `atomic`/`nonatomic` to be first in the attribute list: keep consistency around the codebase.
 
-- The only time when ivars should be used is dealloc and init methods. This is because in init and dealloc it's generally best practice to avoid side effects of setting properties directly, and because inside init, the object is still in a partial state.
+- Prefer using properties for all ivar access. There are many good reasons to do it, as stated [here for example](http://blog.bignerdranch.com/4005-should-i-use-a-property-or-an-instance-variable/). Direct ivar access should be justified. Refactor recklessly legacy code which still uses instance variables.
 
->For more information on using Accessor Methods in Initializer Methods and dealloc, see [here](https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/MemoryMgmt/Articles/mmPractical.html#//apple_ref/doc/uid/TP40004447-SW6).
+- The only time when ivars should be used is `dealloc` and `init` methods, and implementation of properties based on them. This is because in `init` and `dealloc` it's generally best practice to avoid side effects of setting properties directly, and because inside `init`, the object is still in a partial state.
+
+```objc
+@implementation BMAProfile
+
+- (void)dealloc {
+    [_updateTimer invalidate];
+}
+
+- (BMATimer *)updateTimer {
+    if (!_updateTimer) {
+        _updateTimer = [[BMATimer alloc] init];
+        // ...
+    }
+    return _updateTimer;
+}
+
+@end
+
+```
+
+>For more information on using Accessor Methods in Initialiser Methods and dealloc, see [here](https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/MemoryMgmt/Articles/mmPractical.html#//apple_ref/doc/uid/TP40004447-SW6).
 
 
 ## Naming
@@ -445,7 +523,7 @@ UIButton *settingsButton;
 UIButton *setBut;
 ```
 
-A three letter prefix should always be used for class names, categories (especially for categories on Cocoa classes) and constants. Constants should be camel-case with all words capitalized and prefixed by the related class name for clarity. That prefix depends on where the code lays, refer to architecture or tech lead to know which to use (`BPF`, `BPUI`, `BMA`, `HON`, etc)
+A three letter prefix should always be used for class names, categories (especially for categories on Cocoa classes) and constants. Constants should be camel-case with all words capitalised and prefixed by the related class name for clarity. That prefix depends on where the code lays, refer to architecture or tech lead to know which to use (`BPF`, `BPUI`, `BMA`, `HON`, etc)
 
 **For example:**
 
@@ -473,7 +551,7 @@ static const NSTimeInterval fadetime = 0.2;
 
 Properties and local variables should be camel-case with the leading word being lowercase.
 
-Instance variables should be camel-case with the leading word being lowercase, and should be prefixed with an underscore. This is consistent with instance variables synthesized automatically by LLVM. **If LLVM can synthesize the variable automatically, then let it.**
+Instance variables should be camel-case with the leading word being lowercase, and should be prefixed with an underscore. This is consistent with instance variables synthesised automatically by LLVM. **If LLVM can synthesise the variable automatically, then let it.**
 
 **For example:**
 
@@ -511,7 +589,7 @@ When using properties, instance variables should always be accessed and mutated 
 
 When they are needed, comments should be used to explain **why** a particular piece of code does something. Any comments that are used must be kept up-to-date or deleted.
 When comment is inserted, not allowed:
-- Name of person writing the comment: Version control will say already
+- Name of person writing the comment: version control will say already
 - JIRA ticket references
 - No code must be commented. Remove it as it will be tracked in version control. Tag the repo if you think it will be needed in future (rarely the case)
 
@@ -519,7 +597,7 @@ Block comments should generally be avoided, as code should be as self-documentin
 
 Prefer to document interesting pieces of API instead, specially application platform APIs, or reusable code.
 
-Also attributes like NS_REQUIRES_SUPER, NS_DESIGNATED_INITIALIZER, DEPRECATED_MSG_ATTRIBUTE, and DEPRECATED_ATTRIBUTE to document API and ongoing work when refactoring.
+Also attributes like `NS_REQUIRES_SUPER`, `NS_DESIGNATED_INITIALIZER`, `DEPRECATED_MSG_ATTRIBUTE`, and `DEPRECATED_ATTRIBUTE` to document API and ongoing work when refactoring.
 
 ## Protocols
 Protocol format should be as follows:
@@ -529,9 +607,11 @@ Protocol format should be as follows:
 @end
 
 @interface BMAMutualAttraction : NSObject <BMAPerson>
-@property (nonatomic, strong) id<BMAPerson> me;
+@property (nonatomic) id<BMAPerson> me;
 @end
 ```
+
+Prefer to use [properties](#properties), not [methods](#methods) in protocols.
 
 ## Header Documentation
 
@@ -555,12 +635,12 @@ The documentation of class should be done using the Doxygen/AppleDoc syntax only
 
 ## init and dealloc
 
-`dealloc` methods should be placed at the top of the implementation, directly after the `@synthesize` and `@dynamic` statements. `init` should be placed directly below the `dealloc` methods of any class.
+`init` methods should be placed at the top of the implementation, directly after the `@synthesize` and `@dynamic` statements. `dealloc` should be placed directly below the `init` methods of any class.
 
 `init` methods should be structured like this:
 
 ```objc
-- (id)init {
+- (instancetype)init {
     self = [super init]; // or call the designated initalizer
     if (self) {
         // Custom initialization
@@ -568,16 +648,30 @@ The documentation of class should be done using the Doxygen/AppleDoc syntax only
 
     return self;
 }
+
+- (void)dealloc {
+    // Necessary cleanup here
+}
+
 ```
 
-All classes should use NS_DESIGNATED_INITIALIZER for any declared init methods, even if there is only one. It documents the code in a proper way.
+All classes should use `NS_DESIGNATED_INITIALIZER` for any declared init methods, even if there is only one. It documents the code in a proper way.
 
 ##instancetype vs id
 - Read [this](http://nshipster.com/instancetype/) and [this](https://developer.apple.com/library/ios/releasenotes/ObjectiveC/ModernizationObjC/AdoptingModernObjective-C/AdoptingModernObjective-C.html#//apple_ref/doc/uid/TP40014150) if you don't know what instancetype is
-- For init methods, we should use modern ObjC conventions, so ***use instancetype always for init methods***.
-- For factory methods, there are two cases. The two cases better document code by following convetions:
+- For init methods, we should use modern Objective-C conventions, so ***use instancetype always for init methods***.
+- For factory methods, there are two cases. The two cases better document code by following conventions:
     - When the factory method can be subclassed: ***use instancetype***
     - When the factory method is not meant to be subclassed: ***use the type explicitly***
+
+##alloc-init vs new
+
+Do not use `-new`, but chained `-alloc` and `-init`:
+
+```objc
+BMAPerson *person = [[BMAPerson alloc] init]; // Correct
+BMAPerson *person2 = [BMAPerson new]; // Wrong
+```
 
 ## Literals
 
@@ -605,7 +699,7 @@ NSNumber *buildingZIPCode = [NSNumber numberWithInteger:10018];
 
 When accessing the `x`, `y`, `width`, or `height` of a `CGRect`, always use the [`CGGeometry` functions](http://developer.apple.com/library/ios/#documentation/graphicsimaging/reference/CGGeometry/Reference/reference.html) instead of direct struct member access. From Apple's `CGGeometry` reference:
 
-> All functions described in this reference that take CGRect data structures as inputs implicitly standardize those rectangles before calculating their results. For this reason, your applications should avoid directly reading and writing the data stored in the CGRect data structure. Instead, use the functions described here to manipulate rectangles and to retrieve their characteristics.
+> All functions described in this reference that take CGRect data structures as inputs implicitly standardise those rectangles before calculating their results. For this reason, your applications should avoid directly reading and writing the data stored in the CGRect data structure. Instead, use the functions described here to manipulate rectangles and to retrieve their characteristics.
 
 **For example:**
 
@@ -688,15 +782,61 @@ Private properties should be declared in class extensions (anonymous categories)
 ```objc
 @interface BMAAdvertisement ()
 
-@property (nonatomic, strong) GADBannerView *googleAdView;
-@property (nonatomic, strong) ADBannerView *iAdView;
-@property (nonatomic, strong) UIWebView *adXWebView;
+@property (nonatomic) GADBannerView *googleAdView;
+@property (nonatomic) ADBannerView *iAdView;
+@property (nonatomic) UIWebView *adXWebView;
 
 @end
 ```
 
+## Private headers
+
+Use private headers to define class extension and any internal methods and properties which can be used for [unit tests](#unit-tests).
+
+Private header has to contain imports of headers for types declared in main header using `forward declaration` as well as types used in class extension, but not imports of headers for types used in implementation file.
+
+**Example:**
+```objc
+// Foo.h
+
+@class Bar;
+@protocol Baz;
+
+@interface Foo : NSObject
+
+@property (nonatomic, readonly) Bar *bar;
+@property (nonatomic, weak) id<Baz> baz;
+
+@end
+
+// Foo_Private.h
+
+#import "Foo.h"
+
+#import "Bar.h"
+#import "Baz.h"
+#import "Qux.h"
+
+@interface Foo ()
+
+@property (nonatomic) Qux *qux;
+
+@end
+
+// Foo.m
+
+#import "Foo_Private.h"
+...
+
+// FooTests.m
+
+#import "Foo_Private.h"
+...
+
+```
+
 ## Images
-Image names should be named consistently to preserve organization and developer sanity. Please use common judgement when adding them.
+Image names should be named consistently to preserve organisation and developer sanity. Please use common judgement when adding them.
 
 We should use asset catalogs for all newly added images for any new feature. The ideas is to have very granular asset catalogs so they can be distributed as modules as part of libraries in the future. When refactoring, keep an eye over legacy code and move images to asset catalogs.
 
@@ -770,8 +910,8 @@ We use libextobjc macros [@weakify/@strongify](http://aceontech.com/objc/ios/201
     self.inputView.hidden = hidden;
     self.inputView.userInteractionEnabled = !hidden;
     [self updateTableViewContentInsets];
-        [self updateScrollIndicatorInsets];
-    }];
+    [self updateScrollIndicatorInsets];
+}];
 ```
 
 ***Never:***
@@ -781,7 +921,7 @@ We use libextobjc macros [@weakify/@strongify](http://aceontech.com/objc/ios/201
     self.inputView.userInteractionEnabled = !hidden;
     [self updateTableViewContentInsets];
     [self updateScrollIndicatorInsets];
-    }];
+}];
 ```
 
 ## Singletons
@@ -803,9 +943,9 @@ Nevertheless, needed singleton objects should use a thread-safe pattern for crea
 This will prevent [possible and sometimes prolific crashes](http://cocoasamurai.blogspot.com/2011/04/singletons-your-doing-them-wrong.html).
 
 ## Unit Tests
-Unit tests is generally not considered by dev teams, but as code, documentation, and important quality tool, they deserve a lot of thought and care. Unit tests should allow devs to move faster and develop faster, not make them lag and suffer. That is why quality tests is as important as quality code, and we care as an engineering team.
+Unit tests is generally not considered by dev teams, but as code, documentation, and important quality tool, they deserve a lot of thought and care. Unit tests should allow developers to move faster and develop faster, not make them lag and suffer. That is why quality tests is as important as quality code, and we care as an engineering team.
 
-Internally we use XC and SenTestKit, just because the test base is large enough that switching them to other alternatives is a lot of work. Also alternatives are just syntactic sugar + matchers. We can use matcher libraries if needed.
+Internally we use [XCTest](https://developer.apple.com/library/ios/documentation/DeveloperTools/Conceptual/testing_with_xcode/chapters/01-introduction.html) and [SenTestingKit](http://www.quantum-step.com/download/sources/mystep/OCUnit/SourceCode/SenTestingKit/Documentation/IntroSenTestingKit.html), just because the test base is large enough that switching them to other alternatives is a lot of work. Also alternatives are just syntactic sugar + matchers. We can use matcher libraries if needed.
 
 Write tests. Period.
 Prefer writing tests **before** the code under test. Period.
@@ -816,39 +956,40 @@ readability, which is of utterly importance once test is more than 5 mins old. T
 
 ```objc
 - (void)testCase {
-        [self stubModelWithFullData];
-        MyCell* cell = [self.underTest provideMyCell];
-        STAssertEqualObjects(cell.shownName, self.fakeModel.name, nil);
-        STAssertEqualObjects(cell.shownSurname, self.fakeModel.surname, nil);
-        STAssertNotNil(cell.avatar, nil);
+    [self stubModelWithFullData];
+    MyCell* cell = [self.underTest provideMyCell];
+    XCTAssertEqualObjects(cell.shownName, self.fakeModel.name);
+    XCTAssertEqualObjects(cell.shownSurname, self.fakeModel.surname);
+    XCTAssertNotNil(cell.avatar);
 }
 ```
 
 ***Not allowed:***
 ```objc
 test {
-    STAssertTrue(self.myObject.correctState, nil);
+    XCTAssertTrue(self.myObject.correctState);
     [self stubDelegateAndExpectCallbackWithSuccess];
     [self.myObject performCalculations];
-    STAssertNotNil(self.myObject.name, nil);
+    XCTAssertNotNil(self.myObject.name);
     [self.myDelegateMock verify];
 }
 ```
-We follow a strict naming convention for XC or ST testcases. It is of great importance because ideally as a developer you want to read the test method and know what it does before even looking at the test code. Also important for error messages. Test names should follow the pattern:
+We follow a strict naming convention testcases. It is of great importance because ideally as a developer you want to read the test method and know what it does before even looking at the test code. Also important for error messages. Test names should follow the pattern:
 ```objc
     testThat_GivenPreconditions_WhenSomethingHappens_ThenIAmExpectingSomething
 ```
 
 Generally if a test has 'and' in it, it generally means it should be split in two and dev is
 lazy:
+
 ***Not allowed:***
 ```objc
 testThat_GivenX_WhenServerLoadsWhileIReload_AndILookBack_AndStarsAlign_ThenMagicallyTrue
 ```
 
-Try to keep tests 3 lines, generally matching the GIVEN_WHEN_THEN condition in the test name. Refactor ruthlessly if needed to achieve it. Sometimes it's not possible because of mocking setup, but long test methods are a different type of `smell` we want to avoid.
+Try to keep tests 3 lines, generally matching the `GIVEN-WHEN-THEN` condition in the test name. Refactor ruthlessly if needed to achieve it. Sometimes it's not possible because of mocking setup, but long test methods are a different type of `smell` we want to avoid.
 
-Don't use any of the 'string' parameters in macro. Leave them to nil, and make the test method name be long and meaningful. Those string comments tend to be unmaintained, and copy pasted from somewhere else. XCTest framework also lets you not specify any string at all, reducing typing.
+Don't use any of the 'string' parameters in macro. Leave them to nil or omit when using **XCTest**, and make the test method name be long and meaningful. Those string comments tend to be unmaintained, and copy pasted from somewhere else.
 
 ***Not allowed:***
 ```objc
@@ -857,18 +998,18 @@ STAssertTrue(myCondition, @"When moon moves, then the angle between our phone an
 
 ***Should be:***
 ```objc
-STAssertTrue(angleIsSlightlyMovedWhenMovedMoon, nil)
+XCTAssertTrue(angleIsSlightlyMovedWhenMovedMoon);
 ```
 Under test goes first in assertions. This improves readability as generally errors are '<first value> should be equal to <second value>. Thus <first value> is not constant, and <second value> is expected value:
 
 ***Example:***
 ```objc
-STAssertEqualObjects(resultString, @"Hello", nil);
+XCTAssertEqualObjects(resultString, @"Hello");
 ```
 
 ***Incorrect:***
 ```objc
-STAssertEqualObjects(@"Hello", resultString, nil);
+XCTAssertEqualObjects(@"Hello", resultString);
 ```
 
 ## Xcode project
