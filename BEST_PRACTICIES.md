@@ -38,7 +38,7 @@ func testThat_GivenFilterIsChats_WhenIncomingMessageReceived_ThenUserIsUpdatedWi
     }
     
     // When
-    self.receive(message: expectedMessage, incoming: true)
+    self.receive(message: incomingMessage, incoming: true)
     
     // Then
     XCTAssertTrue(isUserUpdated)
