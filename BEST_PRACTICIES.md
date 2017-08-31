@@ -22,7 +22,7 @@ Structure test cases using **Given-When-Then** pattern.
 
 **Given** section may be omitted if there are no specific preconditions.
 
-Comments are necessary if test case is too large. In other cases they may be omitted.
+Comments that separate sections are necessary if test case is too large. In other cases they may be omitted.
 
 Sources:
 * https://martinfowler.com/bliki/GivenWhenThen.html
