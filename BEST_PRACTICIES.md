@@ -20,6 +20,10 @@ Structure test cases using **Given-When-Then** pattern.
 * The **When** section contains the code we want to test
 * The **Then** section contains checks we want to perform
 
+**Given** section may be omitted if there are no specific preconditions.
+
+Comments are necessary if test case is too large. In other cases they may be omitted.
+
 Sources:
 * https://martinfowler.com/bliki/GivenWhenThen.html
 * https://www.objc.io/issues/15-testing/xctest/#given-when-then
