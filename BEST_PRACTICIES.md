@@ -1,3 +1,11 @@
+## Code deprecation
+
+Whenever you decide to deprecate method/class in our codebase, please do:
+1) ideally: remove all the usages of this method/class and method/class itself.
+2) at least: write proper explanation why you deprecate it and provide an explicit alternative.
+
+> if you make your changes in platform code, consider the impact to all 3 our projects: badoo, moxie, chappy
+
 ## Cocoapods
 
 Use only specific pod versions in Podfile
