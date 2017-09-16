@@ -766,9 +766,11 @@ resource.request().onComplete { [weak self] response in
 
 ## Access Control
 
-Prefer `private` to `fileprivate` when possible. Using extensions may require you to use `fileprivate`.
+Use the least possible access level: https://en.wikipedia.org/wiki/Principle_of_least_privilege
 
-Only explicitly use `open`, `public`, and `internal` when you require a full access control specification.
+If you use `internal` don't specify it explicitly, it is used by default.
+
+Prefer `private` to `fileprivate` when possible. Using extensions may require you to use `fileprivate`.
 
 Use access control as the leading property specifier. The only things that should come before access control are the `static` specifier or attributes such as `@IBAction`, `@IBOutlet` and `@discardableResult`.
 
