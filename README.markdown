@@ -130,19 +130,6 @@ extension MyExtension {
 }
 ```
 
-**Preferred:**
-```swift
-extension MyExtension where Base: UIColor {
-    func colorToImage() -> UIImage {
-        let color = self.base
-
-        // function to convert color to image
-
-        return image
-    }
-}
-```
-
 **Not Preferred:**
 ```swift
 func prefix_someFunctionName() -> Bool
