@@ -108,6 +108,35 @@ import SomeModule
 let myClass = MyModule.UsefulClass()
 ```
 
+### Functions Prefixes
+
+Following same pattern as for class names, function names shouldn't be prefixed. Prefixes for functions is mostly used in extensions in order to avoid function name collisions, but in Swift, if a function has the same name as another function defined in another module or a private function the compiler raise a compilation error.
+
+**Preferred:**
+```swift
+extension MyExtension {
+    func functionName()
+}
+```
+
+**Preferred:**
+```swift
+extension MyExtension where Base: UIColor {
+    func colorToImage() -> UIImage {
+        let color = self.base
+
+        // function to convert image to color
+
+        return image
+    }
+}
+```
+
+**Not Preferred:**
+```swift
+func prefix_someFunctionName() -> Bool
+```
+
 ### Delegates
 
 When creating custom delegate methods, an unnamed first parameter should be the delegate source. (UIKit contains numerous examples of this.)
