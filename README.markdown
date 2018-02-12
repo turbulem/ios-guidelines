@@ -112,9 +112,20 @@ let myClass = MyModule.UsefulClass()
 
 Following same pattern as for class names, function names shouldn't be prefixed. Prefixes for functions is mostly used in extensions in order to avoid function name collisions, but in Swift, if a function has the same name as another function defined in another module or a private function the compiler raise a compilation error.
 
+There is one exception in this rule:
+A prefix should be used in the case of exposing a function name to Objective-C code using @objc() in and extension in order to avoid runtime exceptions due to Objective-C dynamism.
+
 **Preferred:**
 ```swift
 extension MyExtension {
+    func functionName()
+}
+```
+
+**Preferred:**
+```swift
+extension MyExtension {
+    @objc(prefix_functionName)
     func functionName()
 }
 ```
