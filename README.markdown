@@ -125,7 +125,7 @@ extension MyExtension where Base: UIColor {
     func colorToImage() -> UIImage {
         let color = self.base
 
-        // function to convert image to color
+        // function to convert color to image
 
         return image
     }
