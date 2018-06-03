@@ -6,7 +6,7 @@ Contributing to this style guide is very straightforward
 
 ### Step 1: Be iOS developer in Badoo
 
-https://team.badoo.com/jobs/81
+https://badoo.com/team/jobs/137/
 
 ### Step 2: Open an Issue
 
